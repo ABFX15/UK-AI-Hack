@@ -1,0 +1,304 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String?  @unique
+  walletAddress String? @unique
+  role         UserRole @default(DEVELOPER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  developerProfile DeveloperProfile?
+  companyProfile   CompanyProfile?
+  applications     Application[]
+  jobs             Job[]
+  
+  @@map("users")
+}
+
+model DeveloperProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  githubUsername   String?  @unique
+  twitterHandle    String?
+  linkedinUrl      String?
+  portfolioUrl     String?
+  bio              String?
+  location         String?
+  availableForWork Boolean  @default(true)
+  expectedSalary   Int?
+  yearsOfExperience Int?
+  tronReputationScore Float @default(0)
+  
+  // Relations
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills         DeveloperSkill[]
+  githubStats    GitHubStats?
+  applications   Application[]
+  
+  @@map("developer_profiles")
+}
+
+model CompanyProfile {
+  id             String  @id @default(cuid())
+  userId         String  @unique
+  companyName    String
+  website        String?
+  description    String?
+  location       String?
+  employeeCount  String?
+  fundingStage   String?
+  techStack      String[]
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobs Job[]
+  reputationScore CompanyReputationScore?
+  
+  @@map("company_profiles")
+}
+
+model Skill {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String
+  description String?
+  
+  // Relations
+  developers DeveloperSkill[]
+  jobs       JobSkill[]
+  
+  @@map("skills")
+}
+
+model DeveloperSkill {
+  id            String @id @default(cuid())
+  developerId   String
+  skillId       String
+  proficiency   Int    // 1-10 scale
+  yearsOfExp    Int?
+  verified      Boolean @default(false)
+  
+  // Relations
+  developer DeveloperProfile @relation(fields: [developerId], references: [id], onDelete: Cascade)
+  skill     Skill           @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  
+  @@unique([developerId, skillId])
+  @@map("developer_skills")
+}
+
+model Job {
+  id              String     @id @default(cuid())
+  companyId       String
+  title           String
+  description     String
+  requirements    String[]
+  benefits        String[]
+  salaryMin       Int?
+  salaryMax       Int?
+  location        String?
+  remote          Boolean    @default(false)
+  experienceLevel String
+  jobType         String     // FULL_TIME, PART_TIME, CONTRACT, INTERNSHIP
+  status          JobStatus  @default(ACTIVE)
+  postedAt        DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deadline        DateTime?
+  
+  // Relations
+  company      CompanyProfile @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  postedBy     User          @relation(fields: [postedById], references: [id])
+  postedById   String
+  skills       JobSkill[]
+  applications Application[]
+  
+  @@map("jobs")
+}
+
+model JobSkill {
+  id       String @id @default(cuid())
+  jobId    String
+  skillId  String
+  required Boolean @default(true)
+  weight   Int     @default(1) // For matching algorithm
+  
+  // Relations
+  job   Job   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  
+  @@unique([jobId, skillId])
+  @@map("job_skills")
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  jobId       String
+  developerId String
+  coverLetter String?
+  status      ApplicationStatus @default(PENDING)
+  appliedAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  aiScore     Float?            // AI matching score
+  
+  // Anti-ghosting features
+  responseDeadline DateTime?     // Company must respond by this date
+  lastStatusUpdate DateTime      @default(now())
+  autoRejectedAt   DateTime?     // If company missed deadline
+  feedbackGiven    Boolean       @default(false)
+  candidateFeedback String?      // Candidate's experience feedback
+  companyFeedback   String?      // Company's feedback on candidate
+  
+  // Relations
+  job       Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  developer DeveloperProfile @relation(fields: [developerId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id])
+  userId    String
+  timeline  ApplicationTimeline[]
+  notifications ApplicationNotification[]
+  
+  @@unique([jobId, developerId])
+  @@map("applications")
+}
+
+model GitHubStats {
+  id                String   @id @default(cuid())
+  developerId       String   @unique
+  totalCommits      Int      @default(0)
+  totalRepos        Int      @default(0)
+  totalStars        Int      @default(0)
+  totalForks        Int      @default(0)
+  languages         String[] // Programming languages used
+  topRepos          Json     // Array of top repositories
+  contributionScore Float    @default(0)
+  lastUpdated       DateTime @default(now())
+  
+  // Relations
+  developer DeveloperProfile @relation(fields: [developerId], references: [id], onDelete: Cascade)
+  
+  @@map("github_stats")
+}
+
+model TronTransaction {
+  id          String   @id @default(cuid())
+  txHash      String   @unique
+  fromAddress String
+  toAddress   String
+  amount      String   // Store as string to handle large numbers
+  type        String   // REPUTATION_UPDATE, PAYMENT, etc.
+  metadata    Json?
+  blockNumber Int
+  timestamp   DateTime
+  
+  @@map("tron_transactions")
+}
+
+model ApplicationTimeline {
+  id            String    @id @default(cuid())
+  applicationId String
+  status        ApplicationStatus
+  changedAt     DateTime  @default(now())
+  changedBy     String?   // User ID who made the change
+  notes         String?
+  automated     Boolean   @default(false) // Was this an automated status change?
+  
+  // Relations
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  
+  @@map("application_timeline")
+}
+
+model ApplicationNotification {
+  id            String              @id @default(cuid())
+  applicationId String
+  recipientId   String              // User ID to notify
+  type          NotificationType
+  title         String
+  message       String
+  sent          Boolean             @default(false)
+  sentAt        DateTime?
+  readAt        DateTime?
+  actionRequired Boolean            @default(false)
+  createdAt     DateTime            @default(now())
+  
+  // Relations
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  
+  @@map("application_notifications")
+}
+
+model CompanyReputationScore {
+  id                    String   @id @default(cuid())
+  companyId             String   @unique
+  responseTimeScore     Float    @default(0)    // How quickly they respond
+  ghostingRate          Float    @default(0)    // Percentage of applications left unanswered
+  candidateSatisfaction Float    @default(0)    // Average rating from candidates
+  totalApplications     Int      @default(0)
+  respondedApplications Int      @default(0)
+  averageResponseTime   Float?   // In hours
+  lastUpdated           DateTime @default(now())
+  
+  // Relations
+  company CompanyProfile @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@map("company_reputation_scores")
+}
+
+model SystemSettings {
+  id                      String @id @default(cuid())
+  key                     String @unique
+  value                   String
+  description             String?
+  
+  @@map("system_settings")
+}
+
+enum UserRole {
+  DEVELOPER
+  COMPANY
+  ADMIN
+}
+
+enum JobStatus {
+  ACTIVE
+  PAUSED
+  FILLED
+  EXPIRED
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWED
+  INTERVIEWED
+  OFFERED
+  ACCEPTED
+  REJECTED
+  EXPIRED         // Auto-rejected due to company timeout
+  WITHDRAWN       // Candidate withdrew
+}
+
+enum NotificationType {
+  APPLICATION_RECEIVED
+  STATUS_UPDATE
+  RESPONSE_DEADLINE_WARNING
+  RESPONSE_OVERDUE
+  FEEDBACK_REQUEST
+  INTERVIEW_SCHEDULED
+  OFFER_RECEIVED
+  GENERAL_UPDATE
+}
