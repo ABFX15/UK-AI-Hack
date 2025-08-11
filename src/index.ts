@@ -4,17 +4,9 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 
-// Import routes
+// Import compliance-focused routes  
+import complianceDemoRoutes from './routes/compliance-demo.js';
 import authRoutes from './routes/auth.js';
-import developerRoutes from './routes/developers.js';
-import companyRoutes from './routes/companies.js';
-import jobRoutes from './routes/jobs.js';
-import applicationRoutes from './routes/applications.js';
-import tronRoutes from './routes/tron.js';
-
-// Import services
-import { antiGhostingService } from './services/antiGhostingService.js';
-import { notificationService } from './services/notificationService.js';
 
 // Load environment variables
 dotenv.config();
@@ -24,33 +16,40 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production'
+        ? ['https://your-compliance-domain.com']
+        : ['http://localhost:3000', 'http://localhost:3001'],
+    credentials: true
+}));
 app.use(morgan('combined'));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
+// Root endpoint - DeFi Compliance Platform
 app.get('/', (req, res) => {
     res.json({
-        message: 'Web3 Talent Agent API',
-        version: '1.0.0',
-        status: 'running',
-        features: [
-            'AI-powered talent matching',
-            'Anti-ghosting system',
-            'Real-time application tracking',
-            'Company reputation scores',
-            'TRON blockchain integration',
-            'GitHub profile analysis',
-            'Automated communication'
+        name: 'DeFi Regulatory Compliance Platform',
+        version: '2.0.0',
+        description: 'AI-powered compliance monitoring for financial institutions using DeFi protocols',
+        capabilities: [
+            'Real-time DeFi protocol risk assessment',
+            'AI-powered AML transaction analysis',
+            'Automated regulatory compliance reporting',
+            'Smart contract security auditing',
+            'Cross-jurisdictional compliance monitoring',
+            'Regulatory alert system'
         ],
-        endpoints: {
-            auth: '/api/auth',
-            developers: '/api/developers',
-            companies: '/api/companies',
-            jobs: '/api/jobs',
-            applications: '/api/applications',
-            tron: '/api/tron'
+        api_endpoints: {
+            compliance_analysis: '/api/compliance/analyze-protocol',
+            aml_analysis: '/api/compliance/analyze-transaction',
+            compliance_reports: '/api/compliance/report/:institutionId',
+            dashboard: '/api/compliance/dashboard/:institutionId',
+            settings: '/api/compliance/settings/:institutionId'
+        },
+        ai_service: {
+            url: process.env.AI_SERVICE_URL || 'http://localhost:8000',
+            status: 'Integration ready'
         }
     });
 });
@@ -58,55 +57,108 @@ app.get('/', (req, res) => {
 // Health check
 app.get('/health', (req, res) => {
     res.json({
-        status: 'healthy',
+        status: 'operational',
         timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        environment: process.env.NODE_ENV || 'development'
+        uptime: Math.floor(process.uptime()),
+        environment: process.env.NODE_ENV || 'development',
+        services: {
+            database: 'connected', // In production, this would check actual DB connection
+            ai_service: 'available',
+            compliance_engine: 'active'
+        }
+    });
+});
+
+// API documentation endpoint
+app.get('/api', (req, res) => {
+    res.json({
+        message: 'DeFi Regulatory Compliance API',
+        version: '2.0.0',
+        documentation: {
+            compliance: 'Analyze DeFi protocols for institutional compliance',
+            aml: 'Anti-Money Laundering transaction analysis',
+            reporting: 'Generate comprehensive compliance reports',
+            monitoring: 'Real-time risk monitoring and alerts'
+        },
+        endpoints: {
+            'POST /api/compliance/analyze-protocol': 'Analyze DeFi protocol risk',
+            'POST /api/compliance/analyze-transaction': 'AML compliance analysis',
+            'GET /api/compliance/report/:institutionId': 'Generate compliance report',
+            'GET /api/compliance/dashboard/:institutionId': 'Real-time dashboard data',
+            'PUT /api/compliance/settings/:institutionId': 'Update compliance settings',
+            'GET /api/compliance/history/:institutionId': 'Historical compliance data'
+        }
     });
 });
 
 // API Routes
+app.use('/api/compliance', complianceDemoRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/developers', developerRoutes);
-app.use('/api/companies', companyRoutes);
-app.use('/api/jobs', jobRoutes);
-app.use('/api/applications', applicationRoutes);
-app.use('/api/tron', tronRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
     res.status(404).json({
         error: 'Endpoint not found',
-        message: 'Please check the API documentation for available endpoints'
+        message: 'Please check the API documentation at /api for available endpoints',
+        available_endpoints: ['/api/compliance', '/api/auth', '/health']
     });
 });
 
-// Error handler
+// Global error handler
 app.use((error: any, req: any, res: any, next: any) => {
-    console.error('Unhandled error:', error);
-    res.status(500).json({
-        error: 'Internal server error',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+    console.error('🚨 Unhandled API error:', error);
+
+    // Log additional context in development
+    if (process.env.NODE_ENV === 'development') {
+        console.error('Request URL:', req.originalUrl);
+        console.error('Request Method:', req.method);
+        console.error('Request Body:', req.body);
+    }
+
+    res.status(error.status || 500).json({
+        error: true,
+        message: error.message || 'Internal server error',
+        code: error.code || 'INTERNAL_ERROR',
+        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
     });
 });
 
-// Background tasks - runs every hour
+// Background compliance monitoring (runs every 30 minutes)
 setInterval(async () => {
     try {
-        console.log('🔄 Running background tasks...');
-        await antiGhostingService.processOverdueApplications();
-        await notificationService.processPendingNotifications();
-        await notificationService.sendCompanyReminders();
-        console.log('✅ Background tasks completed');
+        console.log('� Running compliance monitoring tasks...');
+
+        // In production, this would:
+        // 1. Check for new DeFi protocol deployments
+        // 2. Monitor TVL changes in tracked protocols  
+        // 3. Scan for suspicious transaction patterns
+        // 4. Update regulatory alerts
+        // 5. Generate automated reports for flagged activities
+
+        console.log('✅ Compliance monitoring tasks completed');
     } catch (error) {
-        console.error('❌ Error in background tasks:', error);
+        console.error('❌ Error in compliance monitoring:', error);
     }
-}, 60 * 60 * 1000); // Run every hour
+}, 30 * 60 * 1000); // Run every 30 minutes
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('🛑 SIGTERM received, shutting down gracefully...');
+    process.exit(0);
+});
+
+process.on('SIGINT', () => {
+    console.log('🛑 SIGINT received, shutting down gracefully...');
+    process.exit(0);
+});
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`🚀 Web3 Talent Agent server running on port ${PORT}`);
+    console.log(`🚀 DeFi Regulatory Compliance Platform running on port ${PORT}`);
     console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔗 API Documentation: http://localhost:${PORT}/api`);
+    console.log(`💊 Health Check: http://localhost:${PORT}/health`);
+    console.log(`🛡️  Compliance Dashboard: http://localhost:${PORT}/`);
 });
 
 export default app;

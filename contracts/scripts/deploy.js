@@ -1,48 +1,44 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-    console.log("🚀 Deploying Web3 Talent Agent Smart Contracts...");
+    console.log("🚀 Deploying DeFi Regulatory Compliance Platform...");
 
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with account:", deployer.address);
     console.log("Account balance:", (await ethers.provider.getBalance(deployer.address)).toString());
 
-    // Deploy TalentReputationScore contract
-    console.log("\n📊 Deploying TalentReputationScore...");
-    const TalentReputationScore = await ethers.getContractFactory("TalentReputationScore");
-    const reputationScore = await TalentReputationScore.deploy(deployer.address);
-    await reputationScore.waitForDeployment();
-    const reputationAddress = await reputationScore.getAddress();
-    console.log("✅ TalentReputationScore deployed to:", reputationAddress);
+    // Deploy RegulatoryOracle contract
+    console.log("\n� Deploying RegulatoryOracle...");
+    const RegulatoryOracle = await ethers.getContractFactory("RegulatoryOracle");
+    const regulatoryOracle = await RegulatoryOracle.deploy(deployer.address);
+    await regulatoryOracle.waitForDeployment();
+    const oracleAddress = await regulatoryOracle.getAddress();
+    console.log("✅ RegulatoryOracle deployed to:", oracleAddress);
 
-    // Deploy SLAEnforcement contract
-    console.log("\n⚖️ Deploying SLAEnforcement...");
-    const SLAEnforcement = await ethers.getContractFactory("SLAEnforcement");
-    const slaEnforcement = await SLAEnforcement.deploy(deployer.address);
-    await slaEnforcement.waitForDeployment();
-    const slaAddress = await slaEnforcement.getAddress();
-    console.log("✅ SLAEnforcement deployed to:", slaAddress);
+    // Deploy TransactionMonitor contract
+    console.log("\n🔍 Deploying TransactionMonitor...");
+    const TransactionMonitor = await ethers.getContractFactory("TransactionMonitor");
+    const transactionMonitor = await TransactionMonitor.deploy(deployer.address);
+    await transactionMonitor.waitForDeployment();
+    const monitorAddress = await transactionMonitor.getAddress();
+    console.log("✅ TransactionMonitor deployed to:", monitorAddress);
 
-    // Deploy TalentMatching contract
-    console.log("\n🎯 Deploying TalentMatching...");
-    const TalentMatching = await ethers.getContractFactory("TalentMatching");
-    const talentMatching = await TalentMatching.deploy(
-        deployer.address,
-        reputationAddress,
-        slaAddress
-    );
-    await talentMatching.waitForDeployment();
-    const matchingAddress = await talentMatching.getAddress();
-    console.log("✅ TalentMatching deployed to:", matchingAddress);
+    // Deploy InstitutionalTreasury contract
+    console.log("\n� Deploying InstitutionalTreasury...");
+    const InstitutionalTreasury = await ethers.getContractFactory("InstitutionalTreasury");
+    const institutionalTreasury = await InstitutionalTreasury.deploy(deployer.address);
+    await institutionalTreasury.waitForDeployment();
+    const treasuryAddress = await institutionalTreasury.getAddress();
+    console.log("✅ InstitutionalTreasury deployed to:", treasuryAddress);
 
     // Save deployment addresses
     const deploymentInfo = {
         network: hre.network.name,
         deployer: deployer.address,
         contracts: {
-            TalentReputationScore: reputationAddress,
-            SLAEnforcement: slaAddress,
-            TalentMatching: matchingAddress
+            RegulatoryOracle: oracleAddress,
+            TransactionMonitor: monitorAddress,
+            InstitutionalTreasury: treasuryAddress
         },
         deployedAt: new Date().toISOString()
     };
@@ -62,39 +58,39 @@ async function main() {
 
         try {
             await hre.run("verify:verify", {
-                address: reputationAddress,
+                address: oracleAddress,
                 constructorArguments: [deployer.address]
             });
-            console.log("✅ TalentReputationScore verified");
+            console.log("✅ RegulatoryOracle verified");
         } catch (error) {
-            console.log("❌ TalentReputationScore verification failed:", error.message);
+            console.log("❌ RegulatoryOracle verification failed:", error.message);
         }
 
         try {
             await hre.run("verify:verify", {
-                address: slaAddress,
+                address: monitorAddress,
                 constructorArguments: [deployer.address]
             });
-            console.log("✅ SLAEnforcement verified");
+            console.log("✅ TransactionMonitor verified");
         } catch (error) {
-            console.log("❌ SLAEnforcement verification failed:", error.message);
+            console.log("❌ TransactionMonitor verification failed:", error.message);
         }
 
         try {
             await hre.run("verify:verify", {
-                address: matchingAddress,
-                constructorArguments: [deployer.address, reputationAddress, slaAddress]
+                address: treasuryAddress,
+                constructorArguments: [deployer.address]
             });
-            console.log("✅ TalentMatching verified");
+            console.log("✅ InstitutionalTreasury verified");
         } catch (error) {
-            console.log("❌ TalentMatching verification failed:", error.message);
+            console.log("❌ InstitutionalTreasury verification failed:", error.message);
         }
     }
 
     console.log("\n📋 Contract Addresses Summary:");
-    console.log("TalentReputationScore:", reputationAddress);
-    console.log("SLAEnforcement:", slaAddress);
-    console.log("TalentMatching:", matchingAddress);
+    console.log("RegulatoryOracle:", oracleAddress);
+    console.log("TransactionMonitor:", monitorAddress);
+    console.log("InstitutionalTreasury:", treasuryAddress);
 }
 
 main()

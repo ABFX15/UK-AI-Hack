@@ -1,8 +1,8 @@
 {
-  "name": "web3-talent-agent",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "defi-regulatory-compliance-platform",
+  "version": "2.0.0",
+  "description": "AI-powered regulatory compliance and risk management engine for institutional DeFi",
+  "main": "src/index.ts",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",

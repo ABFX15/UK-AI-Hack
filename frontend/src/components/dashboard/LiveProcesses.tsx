@@ -12,345 +12,530 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
-  Clock,
-  User,
-  Building2,
+  Shield,
   AlertTriangle,
   CheckCircle,
-  PlayCircle,
-  PauseCircle,
-  ArrowRight,
+  Clock,
+  Eye,
+  TrendingUp,
+  Building2,
+  Globe,
+  Activity,
   Zap,
+  Bell,
+  FileText,
+  ArrowRight,
+  Sparkles,
+  Timer,
 } from "lucide-react";
 
-interface HiringProcess {
+interface ComplianceProcess {
   id: string;
-  candidateName: string;
-  jobTitle: string;
-  companyName: string;
+  institutionName: string;
+  processType: string;
+  region: string;
   currentStage: string;
-  status: "in_progress" | "blocked" | "overdue" | "completed";
+  status: "monitoring" | "flagged" | "violation" | "resolved" | "investigating";
   progress: number;
   timeRemaining: string;
-  slaStatus: "green" | "yellow" | "red";
+  riskLevel: "low" | "medium" | "high" | "critical";
   automated: boolean;
   lastUpdate: string;
   nextAction: string;
+  protocolsMonitored: number;
+  transactionsAnalyzed: number;
+  complianceScore: number;
 }
 
-const mockProcesses: HiringProcess[] = [
+const mockProcesses: ComplianceProcess[] = [
   {
-    id: "proc_001",
-    candidateName: "Alex Chen",
-    jobTitle: "Senior Solana Developer",
-    companyName: "DeFi Protocol Inc",
-    currentStage: "technical_interview",
-    status: "in_progress",
+    id: "comp_001",
+    institutionName: "JPMorgan Chase & Co.",
+    processType: "Real-time Protocol Monitoring",
+    region: "US/SEC",
+    currentStage: "Active Surveillance",
+    status: "monitoring",
+    progress: 98,
+    timeRemaining: "Continuous",
+    riskLevel: "low",
+    automated: true,
+    lastUpdate: "2 minutes ago",
+    nextAction: "Continue real-time monitoring",
+    protocolsMonitored: 15,
+    transactionsAnalyzed: 2847,
+    complianceScore: 94.5,
+  },
+  {
+    id: "comp_002",
+    institutionName: "Goldman Sachs Group Inc.",
+    processType: "AML Compliance Review",
+    region: "US/CFTC",
+    currentStage: "Transaction Investigation",
+    status: "flagged",
     progress: 65,
-    timeRemaining: "18h",
-    slaStatus: "green",
-    automated: true,
-    lastUpdate: "2 hours ago",
-    nextAction: "Schedule final interview",
-  },
-  {
-    id: "proc_002",
-    candidateName: "Sarah Johnson",
-    jobTitle: "Web3 Frontend Engineer",
-    companyName: "NFT Marketplace",
-    currentStage: "hr_review",
-    status: "overdue",
-    progress: 40,
-    timeRemaining: "Overdue by 6h",
-    slaStatus: "red",
+    timeRemaining: "18h 30m",
+    riskLevel: "high",
     automated: false,
-    lastUpdate: "8 hours ago",
-    nextAction: "Escalate to manager",
+    lastUpdate: "12 minutes ago",
+    nextAction: "Manual review of flagged transactions",
+    protocolsMonitored: 8,
+    transactionsAnalyzed: 156,
+    complianceScore: 76.2,
   },
   {
-    id: "proc_003",
-    candidateName: "Michael Kim",
-    jobTitle: "Smart Contract Auditor",
-    companyName: "Security Solutions",
-    currentStage: "offer_negotiation",
-    status: "in_progress",
-    progress: 85,
-    timeRemaining: "2d 4h",
-    slaStatus: "yellow",
+    id: "comp_003",
+    institutionName: "Bank of America Corp.",
+    processType: "Protocol Security Assessment",
+    region: "US/OCC",
+    currentStage: "Smart Contract Audit",
+    status: "investigating",
+    progress: 45,
+    timeRemaining: "2d 14h",
+    riskLevel: "medium",
     automated: true,
-    lastUpdate: "30 minutes ago",
-    nextAction: "Await candidate response",
+    lastUpdate: "1 hour ago",
+    nextAction: "Await security audit results",
+    protocolsMonitored: 12,
+    transactionsAnalyzed: 934,
+    complianceScore: 87.8,
   },
   {
-    id: "proc_004",
-    candidateName: "Emma Davis",
-    jobTitle: "DeFi Product Manager",
-    companyName: "Yield Farm DAO",
-    currentStage: "reference_check",
-    status: "blocked",
-    progress: 75,
-    timeRemaining: "Blocked",
-    slaStatus: "red",
+    id: "comp_004",
+    institutionName: "Wells Fargo & Company",
+    processType: "Regulatory Violation Response",
+    region: "US/FINRA",
+    currentStage: "Emergency Protocol",
+    status: "violation",
+    progress: 100,
+    timeRemaining: "IMMEDIATE",
+    riskLevel: "critical",
     automated: false,
-    lastUpdate: "1 day ago",
-    nextAction: "Contact references",
+    lastUpdate: "3 minutes ago",
+    nextAction: "Executive escalation required",
+    protocolsMonitored: 3,
+    transactionsAnalyzed: 45,
+    complianceScore: 32.1,
   },
 ];
 
 const getStageColor = (stage: string) => {
   const colors: Record<string, string> = {
-    application_submitted: "bg-blue-100 text-blue-800",
-    initial_screening: "bg-purple-100 text-purple-800",
-    hr_review: "bg-orange-100 text-orange-800",
-    technical_interview: "bg-green-100 text-green-800",
-    final_interview: "bg-indigo-100 text-indigo-800",
-    reference_check: "bg-yellow-100 text-yellow-800",
-    offer_negotiation: "bg-pink-100 text-pink-800",
-    completed: "bg-emerald-100 text-emerald-800",
+    "Active Surveillance":
+      "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg",
+    "Transaction Investigation":
+      "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg",
+    "Smart Contract Audit":
+      "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg",
+    "Emergency Protocol":
+      "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg animate-pulse",
+    "Multi-Jurisdictional Review":
+      "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg",
+    "Compliance Assessment":
+      "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg",
   };
-  return colors[stage] || "bg-gray-100 text-gray-800";
+  return (
+    colors[stage] || "bg-gradient-to-r from-gray-400 to-gray-500 text-white"
+  );
 };
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case "in_progress":
-      return <PlayCircle className="h-4 w-4 text-blue-600" />;
-    case "blocked":
-      return <PauseCircle className="h-4 w-4 text-red-600" />;
-    case "overdue":
-      return <AlertTriangle className="h-4 w-4 text-orange-600" />;
-    case "completed":
-      return <CheckCircle className="h-4 w-4 text-green-600" />;
+    case "monitoring":
+      return <Eye className="h-5 w-5 text-blue-500" />;
+    case "flagged":
+      return (
+        <AlertTriangle className="h-5 w-5 text-amber-500 animate-bounce" />
+      );
+    case "violation":
+      return <Bell className="h-5 w-5 text-red-500 animate-ping" />;
+    case "investigating":
+      return <Activity className="h-5 w-5 text-purple-500 animate-spin" />;
+    case "resolved":
+      return <CheckCircle className="h-5 w-5 text-emerald-500" />;
     default:
-      return <Clock className="h-4 w-4 text-gray-600" />;
+      return <Clock className="h-5 w-5 text-gray-500" />;
   }
 };
 
-const getSLAIndicator = (slaStatus: string) => {
-  const colors = {
-    green: "bg-green-500",
-    yellow: "bg-yellow-500",
-    red: "bg-red-500",
+const getRiskBadge = (riskLevel: string) => {
+  const styles = {
+    low: "bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 border-emerald-300 shadow-sm",
+    medium:
+      "bg-gradient-to-r from-yellow-100 to-amber-100 text-amber-800 border-amber-300 shadow-sm",
+    high: "bg-gradient-to-r from-orange-100 to-red-100 text-orange-800 border-orange-300 shadow-sm animate-pulse",
+    critical:
+      "bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border-red-300 shadow-lg animate-pulse",
   };
+
   return (
-    <div
-      className={`w-3 h-3 rounded-full ${
-        colors[slaStatus as keyof typeof colors]
-      }`}
-    />
+    <Badge
+      variant="outline"
+      className={`${
+        styles[riskLevel as keyof typeof styles]
+      } font-semibold px-3 py-1 text-xs uppercase tracking-wider`}
+    >
+      <Shield className="h-3 w-3 mr-1" />
+      {riskLevel} RISK
+    </Badge>
   );
 };
 
 export function LiveProcesses() {
-  const [processes, setProcesses] = useState<HiringProcess[]>(mockProcesses);
-  const [filter, setFilter] = useState<"all" | "overdue" | "automated">("all");
+  const [filter, setFilter] = useState<
+    "all" | "critical" | "active" | "violations"
+  >("all");
+  const [processes, setProcesses] =
+    useState<ComplianceProcess[]>(mockProcesses);
 
   const filteredProcesses = processes.filter((process) => {
     switch (filter) {
-      case "overdue":
-        return process.status === "overdue" || process.slaStatus === "red";
-      case "automated":
-        return process.automated;
+      case "critical":
+        return (
+          process.riskLevel === "critical" || process.status === "violation"
+        );
+      case "active":
+        return (
+          process.status === "monitoring" || process.status === "investigating"
+        );
+      case "violations":
+        return process.status === "violation" || process.status === "flagged";
       default:
         return true;
     }
   });
 
-  const handleAdvanceProcess = async (processId: string) => {
-    // Simulate API call to advance process
-    console.log(`Advancing process ${processId}`);
-    // You would call your automation API here
-    // await automationService.advanceProcess(processId, newStage, actor);
-  };
-
-  const handleResolveBlocker = async (processId: string) => {
-    // Simulate API call to resolve blocker
-    console.log(`Resolving blocker for process ${processId}`);
-    // You would call your automation API here
-  };
+  const criticalCount = processes.filter(
+    (p) => p.riskLevel === "critical" || p.status === "violation"
+  ).length;
+  const activeCount = processes.filter(
+    (p) => p.status === "monitoring" || p.status === "investigating"
+  ).length;
+  const violationCount = processes.filter(
+    (p) => p.status === "violation" || p.status === "flagged"
+  ).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 p-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-8 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative z-10 flex items-center justify-between">
+          <div>
+            <h2 className="text-4xl font-bold mb-2 flex items-center gap-3">
+              <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+                <Activity className="h-8 w-8" />
+              </div>
+              Live Compliance Processes
+            </h2>
+            <p className="text-xl text-blue-100 font-medium">
+              Real-time monitoring of institutional DeFi compliance activities
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-lg">
+            <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+              <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse shadow-lg shadow-emerald-400/50"></div>
+              <span className="font-semibold">Live Updates</span>
+            </div>
+          </div>
+        </div>
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+      </div>
+
       {/* Filter Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
+      <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-100">
+        <div className="flex flex-wrap gap-3">
           <Button
             variant={filter === "all" ? "default" : "outline"}
-            size="sm"
+            size="lg"
+            className={`${
+              filter === "all"
+                ? "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg"
+                : "hover:bg-gray-50"
+            } font-semibold px-6 py-3 rounded-xl transition-all duration-300`}
             onClick={() => setFilter("all")}
           >
-            All Processes ({processes.length})
+            <Globe className="h-5 w-5 mr-2" />
+            All Processes
+            <Badge
+              variant="secondary"
+              className="ml-3 bg-white/30 text-current border-0"
+            >
+              {processes.length}
+            </Badge>
           </Button>
-          <Button
-            variant={filter === "overdue" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter("overdue")}
-          >
-            Needs Attention (
-            {
-              processes.filter(
-                (p) => p.status === "overdue" || p.slaStatus === "red"
-              ).length
-            }
-            )
-          </Button>
-          <Button
-            variant={filter === "automated" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter("automated")}
-          >
-            Automated ({processes.filter((p) => p.automated).length})
-          </Button>
-        </div>
 
-        <div className="text-sm text-gray-600 flex items-center gap-2">
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          Live Updates
+          <Button
+            variant={filter === "critical" ? "destructive" : "outline"}
+            size="lg"
+            className={`${
+              filter === "critical"
+                ? "bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 shadow-lg"
+                : "hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+            } font-semibold px-6 py-3 rounded-xl transition-all duration-300`}
+            onClick={() => setFilter("critical")}
+          >
+            <AlertTriangle className="h-5 w-5 mr-2" />
+            Critical Issues
+            <Badge
+              variant="secondary"
+              className={`ml-3 ${
+                filter === "critical" ? "bg-white/30" : "bg-red-100"
+              } text-current border-0`}
+            >
+              {criticalCount}
+            </Badge>
+          </Button>
+
+          <Button
+            variant={filter === "active" ? "default" : "outline"}
+            size="lg"
+            className={`${
+              filter === "active"
+                ? "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg"
+                : "hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200"
+            } font-semibold px-6 py-3 rounded-xl transition-all duration-300`}
+            onClick={() => setFilter("active")}
+          >
+            <Activity className="h-5 w-5 mr-2" />
+            Active Monitoring
+            <Badge
+              variant="secondary"
+              className={`ml-3 ${
+                filter === "active" ? "bg-white/30" : "bg-emerald-100"
+              } text-current border-0`}
+            >
+              {activeCount}
+            </Badge>
+          </Button>
+
+          <Button
+            variant={filter === "violations" ? "destructive" : "outline"}
+            size="lg"
+            className={`${
+              filter === "violations"
+                ? "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg"
+                : "hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200"
+            } font-semibold px-6 py-3 rounded-xl transition-all duration-300`}
+            onClick={() => setFilter("violations")}
+          >
+            <Bell className="h-5 w-5 mr-2" />
+            Violations
+            <Badge
+              variant="secondary"
+              className={`ml-3 ${
+                filter === "violations" ? "bg-white/30" : "bg-orange-100"
+              } text-current border-0`}
+            >
+              {violationCount}
+            </Badge>
+          </Button>
         </div>
       </div>
 
-      {/* Process List */}
-      <div className="grid gap-4">
+      {/* Process Cards */}
+      <div className="grid gap-6">
         {filteredProcesses.map((process) => (
-          <Card key={process.id} className="relative overflow-hidden">
-            {/* SLA Status Indicator */}
-            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-gray-200 to-gray-300">
-              <div
-                className={`w-full transition-all duration-300 ${
-                  process.slaStatus === "green"
-                    ? "bg-green-500"
-                    : process.slaStatus === "yellow"
-                    ? "bg-yellow-500"
-                    : "bg-red-500"
-                }`}
-                style={{ height: `${process.progress}%` }}
-              />
-            </div>
+          <Card
+            key={process.id}
+            className="group hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 border-0 shadow-lg bg-white/80 backdrop-blur-sm overflow-hidden"
+          >
+            {/* Status indicator bar */}
+            <div
+              className={`h-2 ${
+                process.status === "violation"
+                  ? "bg-gradient-to-r from-red-500 to-pink-500"
+                  : process.status === "flagged"
+                  ? "bg-gradient-to-r from-amber-500 to-orange-500"
+                  : process.status === "investigating"
+                  ? "bg-gradient-to-r from-purple-500 to-indigo-500"
+                  : "bg-gradient-to-r from-blue-500 to-cyan-500"
+              }`}
+            ></div>
 
-            <CardHeader className="pb-3 pl-6">
+            <CardHeader className="pb-4">
               <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">
-                      {process.candidateName}
-                    </CardTitle>
-                    {process.automated && (
-                      <Badge
-                        variant="secondary"
-                        className="bg-purple-100 text-purple-700"
-                      >
-                        <Zap className="h-3 w-3 mr-1" />
-                        Auto
-                      </Badge>
-                    )}
-                    {getSLAIndicator(process.slaStatus)}
+                <div className="space-y-3 flex-1">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl">
+                      {getStatusIcon(process.status)}
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl font-bold text-gray-900 mb-1">
+                        {process.institutionName}
+                      </CardTitle>
+
+                      <div className="flex items-center gap-3 flex-wrap">
+                        {process.automated && (
+                          <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border-purple-200 font-semibold px-3 py-1">
+                            <Zap className="h-4 w-4 mr-1" />
+                            AI Automated
+                          </Badge>
+                        )}
+
+                        <Badge
+                          className={`${getStageColor(
+                            process.currentStage
+                          )} font-semibold px-4 py-2 text-sm`}
+                        >
+                          {process.currentStage}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
-                  <CardDescription className="flex items-center gap-4">
-                    <span className="flex items-center gap-1">
-                      <Building2 className="h-4 w-4" />
-                      {process.companyName}
+
+                  <div className="flex items-center gap-6 text-gray-600">
+                    <span className="flex items-center gap-2 font-medium">
+                      <FileText className="h-5 w-5 text-blue-500" />
+                      {process.processType}
                     </span>
-                    <span>{process.jobTitle}</span>
-                  </CardDescription>
+                    <span className="flex items-center gap-2 font-medium">
+                      <Globe className="h-5 w-5 text-indigo-500" />
+                      {process.region}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  {getStatusIcon(process.status)}
-                  <Badge className={getStageColor(process.currentStage)}>
-                    {process.currentStage.replace("_", " ")}
-                  </Badge>
+                <div className="text-right">
+                  {getRiskBadge(process.riskLevel)}
                 </div>
               </div>
             </CardHeader>
 
-            <CardContent className="pt-0 pl-6 space-y-4">
-              {/* Progress Bar */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Progress</span>
+            <CardContent className="space-y-6">
+              {/* Key Metrics - Enhanced Visual Design */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-2xl border border-blue-100 text-center">
+                  <div className="text-3xl font-bold text-blue-600 mb-1">
+                    {process.protocolsMonitored}
+                  </div>
+                  <div className="text-sm font-medium text-blue-700">
+                    Protocols Monitored
+                  </div>
+                </div>
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-2xl border border-emerald-100 text-center">
+                  <div className="text-3xl font-bold text-emerald-600 mb-1">
+                    {process.transactionsAnalyzed.toLocaleString()}
+                  </div>
+                  <div className="text-sm font-medium text-emerald-700">
+                    Transactions Analyzed
+                  </div>
+                </div>
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-2xl border border-purple-100 text-center">
+                  <div className="text-3xl font-bold text-purple-600 mb-1">
+                    {process.complianceScore}%
+                  </div>
+                  <div className="text-sm font-medium text-purple-700">
+                    Compliance Score
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress Section - Enhanced */}
+              <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-2xl">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    <Timer className="h-5 w-5 text-blue-500" />
+                    Process Status
+                  </span>
                   <span
-                    className={`font-medium ${
-                      process.status === "overdue"
-                        ? "text-red-600"
-                        : "text-gray-600"
+                    className={`text-lg font-bold px-4 py-2 rounded-full ${
+                      process.status === "violation"
+                        ? "bg-red-100 text-red-700"
+                        : process.status === "flagged"
+                        ? "bg-amber-100 text-amber-700"
+                        : "bg-blue-100 text-blue-700"
                     }`}
                   >
                     {process.timeRemaining}
                   </span>
                 </div>
+
                 <Progress
                   value={process.progress}
-                  className={`h-2 ${
-                    process.slaStatus === "red"
-                      ? "bg-red-100"
-                      : process.slaStatus === "yellow"
-                      ? "bg-yellow-100"
-                      : "bg-green-100"
+                  className={`h-4 ${
+                    process.status === "violation"
+                      ? "bg-red-200"
+                      : process.status === "flagged"
+                      ? "bg-amber-200"
+                      : "bg-blue-200"
                   }`}
                 />
-              </div>
-
-              {/* Next Action & Controls */}
-              <div className="flex items-center justify-between pt-2">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <ArrowRight className="h-4 w-4" />
-                  <span>{process.nextAction}</span>
-                </div>
-
-                <div className="flex gap-2">
-                  {process.status === "blocked" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleResolveBlocker(process.id)}
-                    >
-                      Resolve Blocker
-                    </Button>
-                  )}
-
-                  {process.status === "in_progress" && (
-                    <Button
-                      size="sm"
-                      onClick={() => handleAdvanceProcess(process.id)}
-                    >
-                      Advance Stage
-                    </Button>
-                  )}
-
-                  {process.status === "overdue" && (
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleAdvanceProcess(process.id)}
-                    >
-                      Escalate
-                    </Button>
-                  )}
+                <div className="text-right mt-2 text-sm font-medium text-gray-600">
+                  {process.progress}% Complete
                 </div>
               </div>
 
-              {/* Last Update */}
-              <div className="text-xs text-gray-500 border-t pt-2">
-                Last updated: {process.lastUpdate}
+              {/* Next Action & Controls - Enhanced */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl">
+                      <ArrowRight className="h-5 w-5 text-indigo-600" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+                        Next Action
+                      </div>
+                      <div className="text-lg font-semibold text-gray-900">
+                        {process.nextAction}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    {process.status === "violation" && (
+                      <Button className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg">
+                        <Bell className="h-4 w-4 mr-2" />
+                        Escalate Now
+                      </Button>
+                    )}
+
+                    {process.status === "flagged" && (
+                      <Button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg">
+                        <Eye className="h-4 w-4 mr-2" />
+                        Investigate
+                      </Button>
+                    )}
+
+                    <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg">
+                      <TrendingUp className="h-4 w-4 mr-2" />
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Timestamp - Enhanced */}
+              <div className="flex items-center justify-between text-sm text-gray-500 bg-gray-50 px-4 py-3 rounded-xl">
+                <span className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Last updated: <strong>{process.lastUpdate}</strong>
+                </span>
+                <span className="font-mono bg-white px-3 py-1 rounded-lg border">
+                  ID: {process.id}
+                </span>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
+      {/* Empty State */}
       {filteredProcesses.length === 0 && (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {filter === "overdue"
-                ? "No overdue processes!"
-                : "No processes found"}
+        <Card className="border-dashed border-2 border-gray-300">
+          <CardContent className="py-16 text-center">
+            <div className="p-4 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+              <Shield className="h-12 w-12 text-blue-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">
+              No compliance processes found
             </h3>
-            <p className="text-gray-600">
-              {filter === "overdue"
-                ? "All processes are meeting their SLA requirements."
-                : "Try adjusting your filters to see more results."}
+            <p className="text-gray-600 text-lg max-w-md mx-auto">
+              {filter === "critical"
+                ? "Excellent! No critical issues detected. All processes are operating within acceptable risk parameters."
+                : "Try adjusting your filters to see more compliance processes."}
             </p>
           </CardContent>
         </Card>

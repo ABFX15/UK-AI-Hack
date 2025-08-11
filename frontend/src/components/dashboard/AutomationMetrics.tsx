@@ -45,11 +45,11 @@ interface AutomationRule {
   name: string;
   description: string;
   type:
-    | "screening"
-    | "scheduling"
-    | "follow_up"
-    | "escalation"
-    | "sla_enforcement";
+    | "compliance_monitoring"
+    | "risk_assessment"
+    | "regulatory_reporting"
+    | "violation_detection"
+    | "protocol_analysis";
   enabled: boolean;
   successRate: number;
   timeSaved: number;
@@ -58,72 +58,74 @@ interface AutomationRule {
 
 const automationRules: AutomationRule[] = [
   {
-    id: "auto_screening",
-    name: "Automated Initial Screening",
+    id: "compliance_monitoring",
+    name: "Real-time Compliance Monitoring",
     description:
-      "AI analyzes GitHub profiles and filters candidates based on requirements",
-    type: "screening",
+      "AI continuously monitors DeFi transactions for regulatory violations",
+    type: "compliance_monitoring",
     enabled: true,
-    successRate: 89.2,
-    timeSaved: 2.5,
-    triggerCount: 147,
+    successRate: 98.7,
+    timeSaved: 45.2,
+    triggerCount: 15420,
   },
   {
-    id: "smart_scheduling",
-    name: "Smart Interview Scheduling",
+    id: "risk_assessment",
+    name: "Automated Protocol Risk Assessment",
     description:
-      "Automatically coordinates interview times based on availability",
-    type: "scheduling",
+      "AI analyzes smart contracts and audits for security vulnerabilities",
+    type: "risk_assessment",
     enabled: true,
-    successRate: 94.7,
-    timeSaved: 1.8,
+    successRate: 94.3,
+    timeSaved: 72.5,
     triggerCount: 89,
   },
   {
-    id: "follow_up_automation",
-    name: "Anti-Ghosting Follow-ups",
+    id: "violation_detection",
+    name: "AML/KYC Violation Detection",
     description:
-      "Sends automated reminders when SLAs are approaching deadlines",
-    type: "follow_up",
+      "Machine learning detects suspicious transaction patterns instantly",
+    type: "violation_detection",
     enabled: true,
-    successRate: 96.1,
-    timeSaved: 0.5,
+    successRate: 99.1,
+    timeSaved: 12.8,
     triggerCount: 234,
   },
   {
-    id: "sla_enforcement",
-    name: "SLA Violation Enforcement",
-    description: "Automatically applies penalties for missed deadlines",
-    type: "sla_enforcement",
+    id: "regulatory_reporting",
+    name: "Automated Regulatory Reporting",
+    description:
+      "Generates compliance reports for regulatory bodies automatically",
+    type: "regulatory_reporting",
     enabled: true,
     successRate: 100,
-    timeSaved: 0.3,
+    timeSaved: 156.0,
     triggerCount: 23,
   },
   {
-    id: "escalation_management",
-    name: "Automatic Escalation",
-    description: "Escalates overdue processes to managers and executives",
-    type: "escalation",
-    enabled: false,
-    successRate: 87.5,
-    timeSaved: 0.8,
+    id: "protocol_analysis",
+    name: "DeFi Protocol Analysis",
+    description:
+      "Analyzes new DeFi protocols for institutional compliance approval",
+    type: "protocol_analysis",
+    enabled: true,
+    successRate: 92.4,
+    timeSaved: 24.8,
     triggerCount: 12,
   },
 ];
 
 const performanceData = [
-  { week: "W1", automation: 72, manual: 28, efficiency: 78 },
-  { week: "W2", automation: 76, manual: 24, efficiency: 82 },
-  { week: "W3", automation: 81, manual: 19, efficiency: 85 },
-  { week: "W4", automation: 78, manual: 22, efficiency: 89 },
+  { week: "W1", automation: 87, manual: 13, efficiency: 94 },
+  { week: "W2", automation: 91, manual: 9, efficiency: 96 },
+  { week: "W3", automation: 94, manual: 6, efficiency: 97 },
+  { week: "W4", automation: 96, manual: 4, efficiency: 98 },
 ];
 
 const timeSavingsData = [
-  { name: "Screening", value: 35, color: "#8b5cf6" },
-  { name: "Scheduling", value: 25, color: "#10b981" },
-  { name: "Follow-ups", value: 20, color: "#f59e0b" },
-  { name: "SLA Enforcement", value: 15, color: "#ef4444" },
+  { name: "Compliance Monitoring", value: 45, color: "#8b5cf6" },
+  { name: "Risk Assessment", value: 25, color: "#10b981" },
+  { name: "Regulatory Reporting", value: 20, color: "#f59e0b" },
+  { name: "Protocol Analysis", value: 10, color: "#ef4444" },
   { name: "Other", value: 5, color: "#6b7280" },
 ];
 
@@ -144,16 +146,16 @@ export function AutomationMetrics() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case "screening":
-        return <Users className="h-4 w-4" />;
-      case "scheduling":
-        return <Clock className="h-4 w-4" />;
-      case "follow_up":
+      case "compliance_monitoring":
         return <Activity className="h-4 w-4" />;
-      case "escalation":
+      case "risk_assessment":
+        return <Target className="h-4 w-4" />;
+      case "regulatory_reporting":
+        return <BarChart3 className="h-4 w-4" />;
+      case "violation_detection":
         return <TrendingUp className="h-4 w-4" />;
-      case "sla_enforcement":
-        return <Timer className="h-4 w-4" />;
+      case "protocol_analysis":
+        return <CheckCircle className="h-4 w-4" />;
       default:
         return <Settings className="h-4 w-4" />;
     }
@@ -161,15 +163,15 @@ export function AutomationMetrics() {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "screening":
+      case "compliance_monitoring":
         return "bg-blue-100 text-blue-700";
-      case "scheduling":
+      case "risk_assessment":
         return "bg-green-100 text-green-700";
-      case "follow_up":
+      case "regulatory_reporting":
         return "bg-yellow-100 text-yellow-700";
-      case "escalation":
+      case "violation_detection":
         return "bg-red-100 text-red-700";
-      case "sla_enforcement":
+      case "protocol_analysis":
         return "bg-purple-100 text-purple-700";
       default:
         return "bg-gray-100 text-gray-700";
@@ -189,10 +191,11 @@ export function AutomationMetrics() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Zap className="h-6 w-6 text-yellow-500" />
-            Automation Metrics
+            Compliance Automation Metrics
           </h2>
           <p className="text-gray-600">
-            Performance and efficiency of automated processes
+            Performance and efficiency of automated regulatory compliance
+            processes
           </p>
         </div>
 
@@ -403,7 +406,8 @@ export function AutomationMetrics() {
         <CardHeader>
           <CardTitle>Automation by Process Stage</CardTitle>
           <CardDescription>
-            Percentage of automated vs manual tasks at each hiring stage
+            Percentage of automated vs manual compliance tasks across regulatory
+            processes
           </CardDescription>
         </CardHeader>
         <CardContent>

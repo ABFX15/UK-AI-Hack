@@ -20,17 +20,18 @@ import {
   XCircle,
   ExternalLink,
   RefreshCw,
-  GitBranch,
-  Linkedin,
-  Github,
-  Calendar,
-  Mail,
+  Shield,
   Database,
   Key,
-  Shield,
   Cloud,
   Zap,
   Activity,
+  FileText,
+  Building2,
+  Globe,
+  Lock,
+  Gavel,
+  TrendingUp,
 } from "lucide-react";
 
 interface Integration {
@@ -38,12 +39,12 @@ interface Integration {
   name: string;
   description: string;
   category:
-    | "talent_sourcing"
-    | "communication"
-    | "storage"
-    | "blockchain"
-    | "ai_ml"
-    | "analytics";
+    | "regulatory_apis"
+    | "blockchain_analysis"
+    | "data_storage"
+    | "ai_compliance"
+    | "reporting"
+    | "monitoring";
   status: "connected" | "disconnected" | "error" | "pending";
   enabled: boolean;
   lastSync?: string;
@@ -57,50 +58,50 @@ interface Integration {
 
 const integrations: Integration[] = [
   {
-    id: "github",
-    name: "GitHub",
-    description: "Analyze developer profiles, repositories, and contributions",
-    category: "talent_sourcing",
+    id: "sec_edgar",
+    name: "SEC EDGAR API",
+    description: "Real-time access to SEC filings and regulatory updates",
+    category: "regulatory_apis",
     status: "connected",
     enabled: true,
     lastSync: "2 minutes ago",
     apiCalls: 847,
     rateLimit: 5000,
-    icon: <Github className="h-5 w-5" />,
+    icon: <Gavel className="h-5 w-5" />,
     authRequired: true,
     healthScore: 98,
     features: [
-      "Profile Analysis",
-      "Repository Stats",
-      "Contribution Graphs",
-      "Skills Detection",
+      "Filing Access",
+      "Regulatory Updates",
+      "Form Analysis",
+      "Compliance Alerts",
     ],
   },
   {
-    id: "linkedin",
-    name: "LinkedIn API",
-    description: "Access professional profiles and networking data",
-    category: "talent_sourcing",
+    id: "finra_trace",
+    name: "FINRA TRACE",
+    description: "Trade reporting and compliance system integration",
+    category: "regulatory_apis",
     status: "connected",
     enabled: true,
     lastSync: "15 minutes ago",
     apiCalls: 234,
     rateLimit: 1000,
-    icon: <Linkedin className="h-5 w-5" />,
+    icon: <Building2 className="h-5 w-5" />,
     authRequired: true,
     healthScore: 95,
     features: [
-      "Profile Data",
-      "Experience History",
-      "Skills Endorsements",
-      "Network Analysis",
+      "Trade Reporting",
+      "Market Data",
+      "Compliance Monitoring",
+      "Risk Assessment",
     ],
   },
   {
-    id: "circle_layer",
-    name: "Circle Layer",
-    description: "Blockchain-based reputation and smart contracts",
-    category: "blockchain",
+    id: "chainalysis",
+    name: "Chainalysis",
+    description: "Blockchain analytics and AML/KYC compliance tools",
+    category: "blockchain_analysis",
     status: "connected",
     enabled: true,
     lastSync: "1 minute ago",
@@ -110,57 +111,57 @@ const integrations: Integration[] = [
     authRequired: true,
     healthScore: 100,
     features: [
-      "Reputation Scoring",
-      "Smart Contracts",
-      "SLA Enforcement",
-      "Anti-Ghosting",
+      "Transaction Analysis",
+      "AML Screening",
+      "Risk Scoring",
+      "Sanctions Monitoring",
     ],
   },
   {
-    id: "calendly",
-    name: "Calendly",
-    description: "Automated interview scheduling and calendar management",
-    category: "communication",
+    id: "elliptic",
+    name: "Elliptic",
+    description: "Advanced blockchain analytics and compliance monitoring",
+    category: "blockchain_analysis",
     status: "connected",
     enabled: false,
     lastSync: "1 hour ago",
     apiCalls: 45,
     rateLimit: 2000,
-    icon: <Calendar className="h-5 w-5" />,
+    icon: <Activity className="h-5 w-5" />,
     authRequired: true,
     healthScore: 87,
     features: [
-      "Auto Scheduling",
-      "Availability Check",
-      "Meeting Reminders",
-      "Time Zone Handling",
+      "Wallet Analysis",
+      "Entity Identification",
+      "Compliance Reporting",
+      "Investigation Tools",
     ],
   },
   {
-    id: "sendgrid",
-    name: "SendGrid",
-    description: "Email automation and communication workflows",
-    category: "communication",
+    id: "aws_compliance",
+    name: "AWS Compliance Services",
+    description: "Cloud-based compliance and audit trail management",
+    category: "data_storage",
     status: "error",
     enabled: true,
     lastSync: "Failed",
     apiCalls: 12,
     rateLimit: 50000,
-    icon: <Mail className="h-5 w-5" />,
+    icon: <Cloud className="h-5 w-5" />,
     authRequired: true,
     healthScore: 23,
     features: [
-      "Email Templates",
-      "Automation Workflows",
-      "Analytics",
-      "Delivery Tracking",
+      "Audit Trails",
+      "Data Encryption",
+      "Compliance Logs",
+      "Secure Storage",
     ],
   },
   {
-    id: "postgresql",
-    name: "PostgreSQL",
-    description: "Primary database for application data",
-    category: "storage",
+    id: "postgresql_compliance",
+    name: "PostgreSQL Compliance DB",
+    description: "Secure database for regulatory and compliance data",
+    category: "data_storage",
     status: "connected",
     enabled: true,
     lastSync: "Real-time",
@@ -170,17 +171,17 @@ const integrations: Integration[] = [
     authRequired: false,
     healthScore: 99,
     features: [
-      "Data Storage",
-      "ACID Compliance",
-      "Advanced Queries",
-      "Backup & Recovery",
+      "Encrypted Storage",
+      "Audit Logs",
+      "Data Integrity",
+      "Compliance Queries",
     ],
   },
   {
-    id: "openai",
-    name: "OpenAI GPT-4",
-    description: "AI-powered analysis and natural language processing",
-    category: "ai_ml",
+    id: "openai_compliance",
+    name: "OpenAI Compliance AI",
+    description: "AI-powered regulatory analysis and risk assessment",
+    category: "ai_compliance",
     status: "connected",
     enabled: true,
     lastSync: "30 seconds ago",
@@ -190,50 +191,90 @@ const integrations: Integration[] = [
     authRequired: true,
     healthScore: 96,
     features: [
-      "Profile Analysis",
-      "Skill Extraction",
-      "Interview Q&A",
-      "Matching Algorithms",
+      "Risk Analysis",
+      "Document Review",
+      "Regulatory Intelligence",
+      "Compliance Scoring",
     ],
   },
   {
-    id: "aws_s3",
-    name: "AWS S3",
-    description: "File storage for resumes, documents, and media",
-    category: "storage",
+    id: "thomson_reuters",
+    name: "Thomson Reuters",
+    description: "Regulatory intelligence and compliance content services",
+    category: "reporting",
     status: "pending",
     enabled: false,
     lastSync: "Never",
     apiCalls: 0,
     rateLimit: 0,
-    icon: <Cloud className="h-5 w-5" />,
+    icon: <FileText className="h-5 w-5" />,
     authRequired: true,
     healthScore: 0,
     features: [
-      "File Storage",
-      "CDN Distribution",
-      "Backup",
-      "Scalable Storage",
+      "Regulatory Updates",
+      "Compliance Guides",
+      "Risk Intelligence",
+      "Global Coverage",
+    ],
+  },
+  {
+    id: "mica_eu",
+    name: "EU MiCA Regulatory API",
+    description: "European crypto-asset regulation compliance monitoring",
+    category: "regulatory_apis",
+    status: "connected",
+    enabled: true,
+    lastSync: "5 minutes ago",
+    apiCalls: 167,
+    rateLimit: 3000,
+    icon: <Globe className="h-5 w-5" />,
+    authRequired: true,
+    healthScore: 92,
+    features: [
+      "MiCA Compliance",
+      "EU Regulations",
+      "Cross-border Monitoring",
+      "Licensing Requirements",
+    ],
+  },
+  {
+    id: "sumsub_kyc",
+    name: "Sumsub KYC/AML",
+    description: "Identity verification and anti-money laundering compliance",
+    category: "monitoring",
+    status: "connected",
+    enabled: true,
+    lastSync: "10 minutes ago",
+    apiCalls: 89,
+    rateLimit: 5000,
+    icon: <Lock className="h-5 w-5" />,
+    authRequired: true,
+    healthScore: 94,
+    features: [
+      "Identity Verification",
+      "Document Analysis",
+      "Sanctions Screening",
+      "Ongoing Monitoring",
     ],
   },
 ];
 
 const categoryIcons = {
-  talent_sourcing: <GitBranch className="h-4 w-4" />,
-  communication: <Mail className="h-4 w-4" />,
-  storage: <Database className="h-4 w-4" />,
-  blockchain: <Shield className="h-4 w-4" />,
-  ai_ml: <Zap className="h-4 w-4" />,
-  analytics: <Activity className="h-4 w-4" />,
+  regulatory_apis: <Gavel className="h-4 w-4" />,
+  blockchain_analysis: <Shield className="h-4 w-4" />,
+  data_storage: <Database className="h-4 w-4" />,
+  ai_compliance: <Zap className="h-4 w-4" />,
+  reporting: <FileText className="h-4 w-4" />,
+  monitoring: <Activity className="h-4 w-4" />,
 };
 
 const categoryColors = {
-  talent_sourcing: "bg-blue-100 text-blue-700",
-  communication: "bg-green-100 text-green-700",
-  storage: "bg-purple-100 text-purple-700",
-  blockchain: "bg-yellow-100 text-yellow-700",
-  ai_ml: "bg-red-100 text-red-700",
-  analytics: "bg-indigo-100 text-indigo-700",
+  regulatory_apis: "bg-blue-100 text-blue-700",
+  blockchain_analysis: "bg-green-100 text-green-700",
+  data_storage: "bg-purple-100 text-purple-700",
+  ai_compliance: "bg-yellow-100 text-yellow-700",
+  reporting: "bg-red-100 text-red-700",
+  monitoring: "bg-indigo-100 text-indigo-700",
 };
 
 export function IntegrationPanel() {
@@ -307,16 +348,17 @@ export function IntegrationPanel() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
             <Plug className="h-6 w-6 text-blue-600" />
-            Integrations
+            Compliance Integrations
           </h2>
-          <p className="text-gray-600">
-            Manage external services and API connections
+          <p className="text-gray-600 mt-1">
+            Manage regulatory APIs, blockchain analytics, and compliance
+            monitoring services
           </p>
         </div>
 
-        <Button>
+        <Button className="font-medium">
           <Plug className="h-4 w-4 mr-2" />
           Add Integration
         </Button>
@@ -332,7 +374,7 @@ export function IntegrationPanel() {
             <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-semibold text-green-600">
               {connectedCount}/{integrations.length}
             </div>
             <p className="text-xs text-muted-foreground">Active integrations</p>
@@ -345,7 +387,7 @@ export function IntegrationPanel() {
             <Activity className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-semibold text-blue-600">
               {avgHealthScore.toFixed(0)}%
             </div>
             <p className="text-xs text-muted-foreground">
@@ -359,10 +401,10 @@ export function IntegrationPanel() {
             <CardTitle className="text-sm font-medium">
               API Calls Today
             </CardTitle>
-            <Zap className="h-4 w-4 text-purple-600" />
+            <TrendingUp className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-2xl font-semibold text-purple-600">
               {totalApiCalls.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">Across all services</p>
@@ -375,7 +417,9 @@ export function IntegrationPanel() {
             <AlertTriangle className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{errorCount}</div>
+            <div className="text-2xl font-semibold text-red-600">
+              {errorCount}
+            </div>
             <p className="text-xs text-muted-foreground">Require attention</p>
           </CardContent>
         </Card>
@@ -384,7 +428,7 @@ export function IntegrationPanel() {
       {/* Filters and Search */}
       <div className="flex flex-col sm:flex-row gap-4">
         <Input
-          placeholder="Search integrations..."
+          placeholder="Search compliance integrations..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
@@ -393,17 +437,18 @@ export function IntegrationPanel() {
         <div className="flex gap-2 flex-wrap">
           {[
             "all",
-            "talent_sourcing",
-            "communication",
-            "storage",
-            "blockchain",
-            "ai_ml",
-            "analytics",
+            "regulatory_apis",
+            "blockchain_analysis",
+            "data_storage",
+            "ai_compliance",
+            "reporting",
+            "monitoring",
           ].map((category) => (
             <Button
               key={category}
               variant={filter === category ? "default" : "outline"}
               size="sm"
+              className="font-medium"
               onClick={() => setFilter(category)}
             >
               {category === "all"
@@ -423,7 +468,7 @@ export function IntegrationPanel() {
         {filteredIntegrations.map((integration) => (
           <Card
             key={integration.id}
-            className="hover:shadow-md transition-shadow"
+            className="hover:shadow-md transition-shadow border-l-4 border-l-blue-500"
           >
             <CardHeader>
               <div className="flex items-start justify-between">
@@ -432,77 +477,111 @@ export function IntegrationPanel() {
                     {integration.icon}
                   </div>
                   <div>
-                    <CardTitle className="text-lg">
+                    <CardTitle className="text-lg font-semibold">
                       {integration.name}
                     </CardTitle>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge
                         variant="outline"
-                        className={categoryColors[integration.category]}
+                        className={`${
+                          categoryColors[integration.category]
+                        } border font-medium`}
                       >
                         {categoryIcons[integration.category]}
-                        {integration.category.replace("_", " ")}
+                        <span className="ml-1">
+                          {integration.category.replace("_", " ")}
+                        </span>
                       </Badge>
                       <Badge
                         variant="outline"
-                        className={getStatusColor(integration.status)}
+                        className={`${getStatusColor(
+                          integration.status
+                        )} border font-medium`}
                       >
                         {getStatusIcon(integration.status)}
-                        {integration.status}
+                        <span className="ml-1 capitalize">
+                          {integration.status}
+                        </span>
                       </Badge>
                     </div>
                   </div>
                 </div>
 
-                <input
-                  type="checkbox"
-                  checked={integration.enabled}
-                  onChange={() => toggleIntegration(integration.id)}
-                  disabled={
-                    integration.status === "error" ||
-                    integration.status === "pending"
-                  }
-                  className="toggle"
-                />
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={integration.enabled}
+                    onChange={() => toggleIntegration(integration.id)}
+                    disabled={
+                      integration.status === "error" ||
+                      integration.status === "pending"
+                    }
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  />
+                </div>
               </div>
 
-              <CardDescription>{integration.description}</CardDescription>
+              <CardDescription className="text-sm">
+                {integration.description}
+              </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
               {/* Health and Status */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>Health Score</span>
-                  <span className="font-medium">
+                  <span className="font-medium">Health Score</span>
+                  <span
+                    className={`font-semibold ${
+                      integration.healthScore >= 95
+                        ? "text-green-600"
+                        : integration.healthScore >= 80
+                        ? "text-yellow-600"
+                        : "text-red-600"
+                    }`}
+                  >
                     {integration.healthScore}%
                   </span>
                 </div>
-                <Progress value={integration.healthScore} className="h-2" />
+                <Progress
+                  value={integration.healthScore}
+                  className={`h-2 ${
+                    integration.healthScore >= 95
+                      ? "bg-green-100"
+                      : integration.healthScore >= 80
+                      ? "bg-yellow-100"
+                      : "bg-red-100"
+                  }`}
+                />
               </div>
 
               {/* API Usage */}
               {integration.rateLimit > 0 && (
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>API Usage</span>
-                    <span className="font-medium">
-                      {integration.apiCalls}/{integration.rateLimit}
+                    <span className="font-medium">API Usage</span>
+                    <span className="font-semibold text-gray-900">
+                      {integration.apiCalls.toLocaleString()}/
+                      {integration.rateLimit.toLocaleString()}
                     </span>
                   </div>
                   <Progress
                     value={(integration.apiCalls / integration.rateLimit) * 100}
-                    className="h-2"
+                    className="h-2 bg-gray-100"
                   />
                 </div>
               )}
 
               {/* Features */}
               <div>
-                <h4 className="text-sm font-medium mb-2">Features</h4>
+                <h4 className="text-sm font-medium mb-2">Core Features</h4>
                 <div className="flex flex-wrap gap-1">
                   {integration.features.map((feature, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="text-xs font-medium"
+                    >
                       {feature}
                     </Badge>
                   ))}
@@ -511,16 +590,18 @@ export function IntegrationPanel() {
 
               {/* Last Sync */}
               {integration.lastSync && (
-                <div className="text-sm text-gray-500">
-                  Last sync: {integration.lastSync}
+                <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                  <span className="font-medium">Last sync:</span>{" "}
+                  {integration.lastSync}
                 </div>
               )}
 
               {/* Actions */}
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-2 pt-2 border-t border-gray-100">
                 <Button
                   variant="outline"
                   size="sm"
+                  className="font-medium"
                   onClick={() => configureIntegration(integration.id)}
                 >
                   <Settings className="h-3 w-3 mr-1" />
@@ -530,6 +611,7 @@ export function IntegrationPanel() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="font-medium"
                   onClick={() => testConnection(integration.id)}
                   disabled={integration.status === "pending"}
                 >
@@ -538,13 +620,13 @@ export function IntegrationPanel() {
                 </Button>
 
                 {integration.authRequired && (
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="font-medium">
                     <Key className="h-3 w-3 mr-1" />
                     Auth
                   </Button>
                 )}
 
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="font-medium">
                   <ExternalLink className="h-3 w-3 mr-1" />
                   Docs
                 </Button>
@@ -557,39 +639,43 @@ export function IntegrationPanel() {
       {/* Quick Setup */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Setup Recommendations</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-blue-600" />
+            Quick Setup Recommendations
+          </CardTitle>
           <CardDescription>
-            Suggested integrations to improve your talent matching workflow
+            Essential integrations to enhance your compliance monitoring
+            capabilities
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {[
               {
-                name: "Slack",
+                name: "Slack Compliance Alerts",
                 description:
-                  "Get real-time notifications about matches and SLA violations",
-                category: "communication",
+                  "Get real-time notifications about regulatory violations and critical compliance events",
+                category: "monitoring",
                 priority: "high",
               },
               {
-                name: "Google Calendar",
+                name: "Bloomberg Regulatory Intelligence",
                 description:
-                  "Improved scheduling integration with team calendars",
-                category: "communication",
+                  "Access to global regulatory updates and compliance intelligence",
+                category: "regulatory_apis",
                 priority: "medium",
               },
               {
-                name: "Stripe",
+                name: "Azure Compliance Manager",
                 description:
-                  "Handle payments and financial transactions securely",
-                category: "payment",
-                priority: "low",
+                  "Cloud-based compliance assessment and audit management",
+                category: "data_storage",
+                priority: "medium",
               },
             ].map((suggestion, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-3 border rounded-lg"
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div
@@ -601,15 +687,20 @@ export function IntegrationPanel() {
                         : "bg-green-500"
                     }`}
                   />
-                  <div>
-                    <h4 className="font-medium">{suggestion.name}</h4>
-                    <p className="text-sm text-gray-600">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900">
+                      {suggestion.name}
+                    </h4>
+                    <p className="text-sm text-gray-600 mt-1">
                       {suggestion.description}
                     </p>
+                    <Badge variant="outline" className="mt-2 text-xs">
+                      {suggestion.category.replace("_", " ")}
+                    </Badge>
                   </div>
                 </div>
 
-                <Button size="sm">
+                <Button size="sm" className="font-medium">
                   <Plug className="h-3 w-3 mr-1" />
                   Connect
                 </Button>

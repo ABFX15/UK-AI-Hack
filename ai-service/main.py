@@ -1,297 +1,272 @@
-from fastapi import FastAPI, HTTPException
+"""
+FastAPI Backend for DeFi Regulatory Compliance Platform
+Integrates AI risk analysis with institutional APIs
+"""
+
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Dict, Optional
+from pydantic import BaseModel, Field
+from typing import List, Optional, Dict, Any
+import logging
+import asyncio
+from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
 import uvicorn
 
+# Import our AI service
+from services.defi_risk_analyzer import DeFiRiskAnalyzer
+
 # Load environment variables
 load_dotenv()
 
-# Import our services
-from services.github_analyzer import GitHubAnalyzer
-from services.ai_matcher import AIMatchingService
-from services.sentiment_analyzer import SentimentAnalyzer
-from services.automated_sla import sla_engine, SLAType
-from services.smart_matching import smart_matching_engine
-from services.realtime_dashboard import dashboard, ProcessStage
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Import our regulatory compliance services
+from services.defi_risk_analyzer import DeFiRiskAnalyzer
+from services.regulatory_monitor import RegulatoryMonitor
+from services.compliance_engine import ComplianceEngine
+from services.transaction_analyzer import TransactionAnalyzer
+from services.aml_detector import AMLDetector
+from services.protocol_auditor import ProtocolAuditor
 
 app = FastAPI(
-    title="Web3 Talent AI Service",
-    description="AI-powered analysis and matching for Web3 talent platform",
-    version="1.0.0"
+    title="DeFi Regulatory Compliance AI Service",
+    description="AI-powered regulatory compliance and risk analysis for institutional DeFi",
+    version="2.0.0"
 )
 
-# CORS middleware for TypeScript backend
+# CORS middleware for frontend dashboard
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Your TypeScript server
+    allow_origins=["http://localhost:3000", "http://localhost:3001"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialize services
-github_analyzer = GitHubAnalyzer()
-ai_matcher = AIMatchingService()
-sentiment_analyzer = SentimentAnalyzer()
+# Initialize compliance services
+risk_analyzer = DeFiRiskAnalyzer()
+regulatory_monitor = RegulatoryMonitor()
+compliance_engine = ComplianceEngine()
+transaction_analyzer = TransactionAnalyzer()
+aml_detector = AMLDetector()
+protocol_auditor = ProtocolAuditor()
 
-# Pydantic models
-class GitHubAnalysisRequest(BaseModel):
-    username: str
-    include_detailed_analysis: bool = True
+# Pydantic models for regulatory compliance
+class ProtocolAnalysisRequest(BaseModel):
+    protocol_address: str
+    chain_id: int
+    include_audit_history: bool = True
 
-class GitHubAnalysisResponse(BaseModel):
-    username: str
-    skill_scores: Dict[str, float]
-    experience_level: str
-    specializations: List[str]
-    activity_score: float
-    contribution_quality: float
-    collaboration_score: float
-    innovation_score: float
-    overall_score: float
-    strengths: List[str]
-    areas_for_improvement: List[str]
-    recommended_roles: List[str]
+class ProtocolAnalysisResponse(BaseModel):
+    protocol_address: str
+    risk_score: float
+    compliance_score: float
+    audit_status: str
+    vulnerabilities: List[Dict]
+    regulatory_concerns: List[str]
+    recommendations: List[str]
+    approved_for_institutional_use: bool
 
-class JobMatchRequest(BaseModel):
-    developer_profile: Dict
-    job_requirements: Dict
-    company_info: Dict
+class TransactionAnalysisRequest(BaseModel):
+    from_address: str
+    to_address: str
+    amount: float
+    token_address: str
+    protocol_address: str
+    chain_id: int
 
-class JobMatchResponse(BaseModel):
-    compatibility_score: float
-    skill_match: Dict[str, float]
-    experience_match: float
-    culture_fit: float
-    growth_potential: float
-    reasons: List[str]
-    concerns: List[str]
+class TransactionAnalysisResponse(BaseModel):
+    compliance_status: str
+    risk_level: str
+    aml_flags: List[str]
+    regulatory_violations: List[str]
+    approval_required: bool
+    estimated_penalty_risk: float
     recommendations: List[str]
 
-class SentimentRequest(BaseModel):
-    text: str
-    context: str = "general"
+class ComplianceReportRequest(BaseModel):
+    institution_id: str
+    start_date: str
+    end_date: str
+    regulatory_framework: str  # "SEC", "MiCA", "FCA", etc.
 
-class SentimentResponse(BaseModel):
-    sentiment: str
-    confidence: float
-    emotions: Dict[str, float]
+class ComplianceReportResponse(BaseModel):
+    institution_id: str
+    compliance_score: float
+    total_transactions: int
+    flagged_transactions: int
+    violations: List[Dict]
+    regulatory_summary: Dict
+    recommendations: List[str]
+    report_id: str
+
+class RiskAssessmentRequest(BaseModel):
+    portfolio: List[Dict]  # List of investments
+    institution_risk_tolerance: str
+    regulatory_requirements: List[str]
+
+class RiskAssessmentResponse(BaseModel):
+    overall_risk_score: float
+    risk_breakdown: Dict[str, float]
+    compliance_gaps: List[str]
+    rebalancing_recommendations: List[Dict]
+    regulatory_alerts: List[str]
 
 @app.get("/")
 async def root():
-    return {"message": "Web3 Talent AI Service", "status": "running"}
+    return {"message": "DeFi Regulatory Compliance AI Service", "status": "running"}
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "services": ["github_analyzer", "ai_matcher", "sentiment_analyzer"]}
+    return {
+        "status": "healthy", 
+        "services": [
+            "defi_risk_analyzer", 
+            "regulatory_monitor", 
+            "compliance_engine",
+            "transaction_analyzer",
+            "aml_detector",
+            "protocol_auditor"
+        ]
+    }
 
-@app.post("/analyze/github", response_model=GitHubAnalysisResponse)
-async def analyze_github_profile(request: GitHubAnalysisRequest):
+@app.post("/analyze/protocol", response_model=ProtocolAnalysisResponse)
+async def analyze_protocol(request: ProtocolAnalysisRequest):
     """
-    Advanced AI-powered GitHub profile analysis
+    AI-powered DeFi protocol security and compliance analysis
     """
     try:
-        analysis = await github_analyzer.analyze_profile(
-            request.username, 
-            detailed=request.include_detailed_analysis
+        analysis = await protocol_auditor.analyze_protocol(
+            request.protocol_address,
+            request.chain_id,
+            request.include_audit_history
         )
         return analysis
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/match/job", response_model=JobMatchResponse)
-async def match_job(request: JobMatchRequest):
+@app.post("/analyze/transaction", response_model=TransactionAnalysisResponse)
+async def analyze_transaction(request: TransactionAnalysisRequest):
     """
-    AI-powered job matching algorithm
+    Real-time transaction compliance and AML analysis
     """
     try:
-        match_result = await ai_matcher.calculate_match(
-            request.developer_profile,
-            request.job_requirements,
-            request.company_info
+        analysis = await transaction_analyzer.analyze_transaction(
+            request.from_address,
+            request.to_address,
+            request.amount,
+            request.token_address,
+            request.protocol_address,
+            request.chain_id
         )
-        return match_result
+        return analysis
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/analyze/sentiment", response_model=SentimentResponse)
-async def analyze_sentiment(request: SentimentRequest):
+@app.post("/compliance/report", response_model=ComplianceReportResponse)
+async def generate_compliance_report(request: ComplianceReportRequest):
     """
-    Analyze sentiment for communication/feedback
+    Generate automated regulatory compliance report
     """
     try:
-        sentiment = await sentiment_analyzer.analyze(request.text, request.context)
-        return sentiment
+        report = await compliance_engine.generate_report(
+            request.institution_id,
+            request.start_date,
+            request.end_date,
+            request.regulatory_framework
+        )
+        return report
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/skills/trending")
-async def get_trending_skills():
+@app.post("/risk/assessment", response_model=RiskAssessmentResponse)
+async def assess_portfolio_risk(request: RiskAssessmentRequest):
     """
-    Get trending skills in Web3 space
+    Comprehensive DeFi portfolio risk assessment
     """
     try:
-        skills = await github_analyzer.get_trending_skills()
-        return {"trending_skills": skills}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# Automation and SLA endpoints
-class SLARequest(BaseModel):
-    application_id: str
-    company_id: str
-    sla_type: str
-    custom_hours: Optional[int] = None
-
-class ProcessRequest(BaseModel):
-    application_id: str
-    job_id: str
-    candidate_id: str
-    company_id: str
-
-class ProcessAdvanceRequest(BaseModel):
-    new_stage: str
-    actor: str
-    notes: Optional[str] = ""
-
-class BlockerRequest(BaseModel):
-    blocker_type: str
-    description: str
-    severity: str = "medium"
-
-class MatchingRequest(BaseModel):
-    job_id: str
-    candidate_pool: List[Dict]
-
-class LearnRequest(BaseModel):
-    candidate_id: str
-    job_id: str
-    success_metrics: Dict
-
-@app.post("/automation/sla")
-async def create_sla(request: SLARequest):
-    """Create automated SLA with monitoring"""
-    try:
-        from services.automated_sla import sla_engine, SLAType
-        sla_type = SLAType(request.sla_type)
-        sla = await sla_engine.create_sla(
-            request.application_id,
-            request.company_id,
-            sla_type,
-            request.custom_hours
+        assessment = await risk_analyzer.assess_portfolio(
+            request.portfolio,
+            request.institution_risk_tolerance,
+            request.regulatory_requirements
         )
-        return sla
+        return assessment
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/regulatory/updates")
+async def get_regulatory_updates():
+    """
+    Get latest regulatory updates and changes
+    """
+    try:
+        updates = await regulatory_monitor.get_latest_updates()
+        return {"regulatory_updates": updates}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.put("/automation/sla/{sla_id}/complete")
-async def complete_sla(sla_id: str):
-    """Mark SLA as completed"""
+@app.get("/protocols/whitelist")
+async def get_approved_protocols():
+    """
+    Get list of institutionally approved DeFi protocols
+    """
     try:
-        from services.automated_sla import sla_engine
-        await sla_engine.complete_sla(sla_id)
-        return {"status": "success", "message": f"SLA {sla_id} completed"}
+        protocols = await protocol_auditor.get_approved_protocols()
+        return {"approved_protocols": protocols}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/automation/sla/dashboard/{company_id}")
-async def get_sla_dashboard(company_id: str):
-    """Get SLA performance dashboard"""
+@app.post("/aml/check")
+async def check_aml_compliance(address: str, amount: float):
+    """
+    Check address for AML compliance and sanctions
+    """
     try:
-        from services.automated_sla import sla_engine
-        dashboard_data = await sla_engine.get_sla_dashboard(company_id)
-        return dashboard_data
+        result = await aml_detector.check_compliance(address, amount)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# Real-time monitoring and alerting endpoints
+@app.post("/monitoring/setup-alerts")
+async def setup_regulatory_alerts(institution_id: str, alert_rules: Dict):
+    """
+    Setup real-time regulatory alerts
+    """
+    try:
+        success = await regulatory_monitor.setup_alerts(institution_id, alert_rules)
+        return {"success": success, "message": "Alerts configured successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/monitoring/calendar/{jurisdiction}")
+async def get_regulatory_calendar(jurisdiction: str, timeframe: str = "6months"):
+    """
+    Get regulatory compliance calendar
+    """
+    try:
+        calendar = await regulatory_monitor.generate_regulatory_calendar(jurisdiction, timeframe)
+        return {"compliance_calendar": calendar}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/matching/find-matches")
-async def find_matches(request: MatchingRequest):
-    """Find perfect matches using AI-powered analysis"""
+@app.post("/audit/contract")
+async def audit_smart_contract(contract_address: str, chain_id: int):
+    """
+    Automated smart contract security audit
+    """
     try:
-        from services.smart_matching import smart_matching_engine
-        matches = await smart_matching_engine.find_perfect_matches(
-            request.job_id, 
-            request.candidate_pool
-        )
-        return matches
+        audit_result = await protocol_auditor.audit_smart_contract(contract_address, chain_id)
+        return audit_result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/matching/learn")
-async def learn_from_hire(request: LearnRequest):
-    """Learn from successful hire to improve future matching"""
-    try:
-        from services.smart_matching import smart_matching_engine
-        await smart_matching_engine.learn_from_successful_hire(
-            request.candidate_id,
-            request.job_id,
-            request.success_metrics
-        )
-        return {"status": "success", "message": "Learning completed"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/dashboard/process")
-async def create_process(request: ProcessRequest):
-    """Create new hiring process with real-time tracking"""
-    try:
-        from services.realtime_dashboard import dashboard
-        process = await dashboard.create_hiring_process(
-            request.application_id,
-            request.job_id,
-            request.candidate_id,
-            request.company_id
-        )
-        return process
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.put("/dashboard/process/{process_id}/advance")
-async def advance_process(process_id: str, request: ProcessAdvanceRequest):
-    """Advance hiring process to next stage"""
-    try:
-        from services.realtime_dashboard import dashboard, ProcessStage
-        new_stage = ProcessStage(request.new_stage)
-        process = await dashboard.advance_stage(
-            process_id,
-            new_stage,
-            request.actor,
-            request.notes or ""
-        )
-        return process
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/dashboard/process/{process_id}/blocker")
-async def add_blocker(process_id: str, request: BlockerRequest):
-    """Add blocker to hiring process"""
-    try:
-        from services.realtime_dashboard import dashboard
-        blocker = await dashboard.add_blocker(
-            process_id,
-            request.blocker_type,
-            request.description,
-            request.severity
-        )
-        return blocker
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/dashboard")
-async def get_dashboard(company_id: Optional[str] = None, candidate_id: Optional[str] = None):
-    """Get comprehensive dashboard data"""
-    try:
-        from services.realtime_dashboard import dashboard
-        dashboard_data = await dashboard.get_dashboard_data(company_id, candidate_id)
-        return dashboard_data
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
 if __name__ == "__main__":
-    port = int(os.getenv("AI_SERVICE_PORT", 8000))
+    port = int(os.getenv("AI_SERVICE_PORT", 8001))  # Changed to 8001 to avoid conflicts
     host = os.getenv("AI_SERVICE_HOST", "0.0.0.0")
     
     uvicorn.run(

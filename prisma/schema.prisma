@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// DeFi Regulatory Compliance Platform
+// Prisma Schema for Banking Institutions
 
 generator client {
   provider = "prisma-client-js"
@@ -14,291 +11,218 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  username     String?  @unique
-  walletAddress String? @unique
-  role         UserRole @default(DEVELOPER)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  // Relations
-  developerProfile DeveloperProfile?
-  companyProfile   CompanyProfile?
-  applications     Application[]
-  jobs             Job[]
-  
-  @@map("users")
-}
-
-model DeveloperProfile {
+model Institution {
   id               String   @id @default(cuid())
-  userId           String   @unique
-  githubUsername   String?  @unique
-  twitterHandle    String?
-  linkedinUrl      String?
-  portfolioUrl     String?
-  bio              String?
-  location         String?
-  availableForWork Boolean  @default(true)
-  expectedSalary   Int?
-  yearsOfExperience Int?
-  tronReputationScore Float @default(0)
-  
+  name             String
+  email            String   @unique
+  walletAddress    String?  @unique
+  institutionType  InstitutionType
+  regulatoryId     String?  // Bank charter number, etc.
+  country          String
+  riskTolerance    RiskTolerance @default(MEDIUM)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
   // Relations
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  skills         DeveloperSkill[]
-  githubStats    GitHubStats?
-  applications   Application[]
+  complianceAnalyses ComplianceAnalysis[]
+  complianceReports  ComplianceReport[]
+  complianceSettings ComplianceSettings?
+  amlAnalyses       AMLAnalysis[]
   
-  @@map("developer_profiles")
+  @@map("institutions")
 }
 
-model CompanyProfile {
-  id             String  @id @default(cuid())
-  userId         String  @unique
-  companyName    String
-  website        String?
-  description    String?
-  location       String?
-  employeeCount  String?
-  fundingStage   String?
-  techStack      String[]
-  
+model ComplianceAnalysis {
+  id                     String   @id @default(cuid())
+  protocolAddress        String
+  institutionAddress     String?
+  protocolName          String?
+  riskScore             Float
+  riskLevel             RiskLevel
+  recommendation        ComplianceRecommendation
+  maxExposurePercentage Float?
+  analysisData          Json     // Full AI analysis result
+  analysisTimestamp     DateTime
+  createdAt             DateTime @default(now())
+
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  jobs Job[]
-  reputationScore CompanyReputationScore?
+  institution Institution? @relation(fields: [institutionId], references: [id])
+  institutionId String?
   
-  @@map("company_profiles")
+  @@map("compliance_analyses")
 }
 
-model Skill {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  category    String
-  description String?
-  
+model AMLAnalysis {
+  id                  String   @id @default(cuid())
+  transactionHash     String   @unique
+  amountUsd          Float
+  counterpartyAddress String
+  amlRiskScore       Float
+  complianceLevel    ComplianceLevel
+  suspiciousPatterns String[]
+  requiresManualReview Boolean
+  analysisData       Json     // Full AML analysis result
+  analysisTimestamp  DateTime
+  createdAt          DateTime @default(now())
+
   // Relations
-  developers DeveloperSkill[]
-  jobs       JobSkill[]
+  institution Institution? @relation(fields: [institutionId], references: [id])
+  institutionId String?
   
-  @@map("skills")
+  @@map("aml_analyses")
 }
 
-model DeveloperSkill {
-  id            String @id @default(cuid())
-  developerId   String
-  skillId       String
-  proficiency   Int    // 1-10 scale
-  yearsOfExp    Int?
-  verified      Boolean @default(false)
-  
+model ComplianceReport {
+  id                        String   @id @default(cuid())
+  institutionId            String
+  reportPeriod             String   // "30d", "90d", etc.
+  overallComplianceScore   Float
+  totalProtocolsAnalyzed   Int
+  averageProtocolRisk      Float
+  highRiskProtocols        Int
+  totalTransactionsAnalyzed Int
+  flaggedTransactions      Int
+  reportData              Json     // Full report data
+  generatedAt             DateTime @default(now())
+
   // Relations
-  developer DeveloperProfile @relation(fields: [developerId], references: [id], onDelete: Cascade)
-  skill     Skill           @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   
-  @@unique([developerId, skillId])
-  @@map("developer_skills")
+  @@map("compliance_reports")
 }
 
-model Job {
-  id              String     @id @default(cuid())
-  companyId       String
-  title           String
-  description     String
-  requirements    String[]
-  benefits        String[]
-  salaryMin       Int?
-  salaryMax       Int?
-  location        String?
-  remote          Boolean    @default(false)
-  experienceLevel String
-  jobType         String     // FULL_TIME, PART_TIME, CONTRACT, INTERNSHIP
-  status          JobStatus  @default(ACTIVE)
-  postedAt        DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  deadline        DateTime?
-  
+model ComplianceSettings {
+  id                      String   @id @default(cuid())
+  institutionId          String   @unique
+  riskToleranceLevel     RiskTolerance @default(MEDIUM)
+  maxExposurePercentage  Float    @default(15.0)
+  enableAMLMonitoring    Boolean  @default(true)
+  enableProtocolWhitelist Boolean @default(true)
+  customRiskParameters   Json     @default("{}")
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
   // Relations
-  company      CompanyProfile @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  postedBy     User          @relation(fields: [postedById], references: [id])
-  postedById   String
-  skills       JobSkill[]
-  applications Application[]
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   
-  @@map("jobs")
+  @@map("compliance_settings")
 }
 
-model JobSkill {
-  id       String @id @default(cuid())
-  jobId    String
-  skillId  String
-  required Boolean @default(true)
-  weight   Int     @default(1) // For matching algorithm
+model DeFiProtocol {
+  id              String   @id @default(cuid())
+  address         String   @unique
+  name            String
+  category        String   // "lending", "dex", "yield", etc.
+  blockchain      String   @default("ethereum")
+  tvlUsd         Float?
+  auditStatus    AuditStatus
+  governanceType String?
+  lastAnalyzed   DateTime?
+  whitelisted    Boolean  @default(false)
+  blacklisted    Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
   
-  // Relations
-  job   Job   @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  
-  @@unique([jobId, skillId])
-  @@map("job_skills")
+  @@map("defi_protocols")
 }
 
-model Application {
-  id          String            @id @default(cuid())
-  jobId       String
-  developerId String
-  coverLetter String?
-  status      ApplicationStatus @default(PENDING)
-  appliedAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  aiScore     Float?            // AI matching score
-  
-  // Anti-ghosting features
-  responseDeadline DateTime?     // Company must respond by this date
-  lastStatusUpdate DateTime      @default(now())
-  autoRejectedAt   DateTime?     // If company missed deadline
-  feedbackGiven    Boolean       @default(false)
-  candidateFeedback String?      // Candidate's experience feedback
-  companyFeedback   String?      // Company's feedback on candidate
-  
-  // Relations
-  job       Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  developer DeveloperProfile @relation(fields: [developerId], references: [id], onDelete: Cascade)
-  user      User             @relation(fields: [userId], references: [id])
-  userId    String
-  timeline  ApplicationTimeline[]
-  notifications ApplicationNotification[]
-  
-  @@unique([jobId, developerId])
-  @@map("applications")
-}
-
-model GitHubStats {
-  id                String   @id @default(cuid())
-  developerId       String   @unique
-  totalCommits      Int      @default(0)
-  totalRepos        Int      @default(0)
-  totalStars        Int      @default(0)
-  totalForks        Int      @default(0)
-  languages         String[] // Programming languages used
-  topRepos          Json     // Array of top repositories
-  contributionScore Float    @default(0)
-  lastUpdated       DateTime @default(now())
-  
-  // Relations
-  developer DeveloperProfile @relation(fields: [developerId], references: [id], onDelete: Cascade)
-  
-  @@map("github_stats")
-}
-
-model TronTransaction {
-  id          String   @id @default(cuid())
-  txHash      String   @unique
-  fromAddress String
-  toAddress   String
-  amount      String   // Store as string to handle large numbers
-  type        String   // REPUTATION_UPDATE, PAYMENT, etc.
-  metadata    Json?
-  blockNumber Int
-  timestamp   DateTime
-  
-  @@map("tron_transactions")
-}
-
-model ApplicationTimeline {
-  id            String    @id @default(cuid())
-  applicationId String
-  status        ApplicationStatus
-  changedAt     DateTime  @default(now())
-  changedBy     String?   // User ID who made the change
-  notes         String?
-  automated     Boolean   @default(false) // Was this an automated status change?
-  
-  // Relations
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  
-  @@map("application_timeline")
-}
-
-model ApplicationNotification {
-  id            String              @id @default(cuid())
-  applicationId String
-  recipientId   String              // User ID to notify
-  type          NotificationType
+model RegulatoryAlert {
+  id            String      @id @default(cuid())
+  institutionId String?
+  alertType     AlertType
+  severity      AlertSeverity
   title         String
-  message       String
-  sent          Boolean             @default(false)
-  sentAt        DateTime?
-  readAt        DateTime?
-  actionRequired Boolean            @default(false)
-  createdAt     DateTime            @default(now())
-  
-  // Relations
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  
-  @@map("application_notifications")
+  description   String
+  triggerData   Json?       // Data that triggered the alert
+  acknowledged  Boolean     @default(false)
+  acknowledgedAt DateTime?
+  resolvedAt    DateTime?
+  createdAt     DateTime    @default(now())
+
+  @@map("regulatory_alerts")
 }
 
-model CompanyReputationScore {
-  id                    String   @id @default(cuid())
-  companyId             String   @unique
-  responseTimeScore     Float    @default(0)    // How quickly they respond
-  ghostingRate          Float    @default(0)    // Percentage of applications left unanswered
-  candidateSatisfaction Float    @default(0)    // Average rating from candidates
-  totalApplications     Int      @default(0)
-  respondedApplications Int      @default(0)
-  averageResponseTime   Float?   // In hours
-  lastUpdated           DateTime @default(now())
-  
-  // Relations
-  company CompanyProfile @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
-  @@map("company_reputation_scores")
+model AuditLog {
+  id            String   @id @default(cuid())
+  institutionId String?
+  action        String
+  resourceType  String   // "protocol", "transaction", "report", etc.
+  resourceId    String?
+  userId        String?
+  ipAddress     String?
+  userAgent     String?
+  metadata      Json?
+  timestamp     DateTime @default(now())
+
+  @@map("audit_logs")
 }
 
 model SystemSettings {
-  id                      String @id @default(cuid())
-  key                     String @unique
-  value                   String
-  description             String?
+  id          String @id @default(cuid())
+  key         String @unique
+  value       String
+  description String?
   
   @@map("system_settings")
 }
 
-enum UserRole {
-  DEVELOPER
-  COMPANY
-  ADMIN
+enum InstitutionType {
+  COMMERCIAL_BANK
+  INVESTMENT_BANK
+  CREDIT_UNION
+  FINTECH
+  HEDGE_FUND
+  FAMILY_OFFICE
+  OTHER
 }
 
-enum JobStatus {
-  ACTIVE
-  PAUSED
-  FILLED
-  EXPIRED
+enum RiskTolerance {
+  VERY_LOW
+  LOW
+  MEDIUM
+  HIGH
+  VERY_HIGH
 }
 
-enum ApplicationStatus {
-  PENDING
-  REVIEWED
-  INTERVIEWED
-  OFFERED
-  ACCEPTED
-  REJECTED
-  EXPIRED         // Auto-rejected due to company timeout
-  WITHDRAWN       // Candidate withdrew
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
 }
 
-enum NotificationType {
-  APPLICATION_RECEIVED
-  STATUS_UPDATE
-  RESPONSE_DEADLINE_WARNING
-  RESPONSE_OVERDUE
-  FEEDBACK_REQUEST
-  INTERVIEW_SCHEDULED
-  OFFER_RECEIVED
-  GENERAL_UPDATE
+enum ComplianceRecommendation {
+  APPROVED_FOR_INSTITUTIONAL_USE
+  APPROVED_WITH_LIMITATIONS
+  REQUIRES_ADDITIONAL_REVIEW
+  BLOCKED_HIGH_RISK
+  BLOCKED_ANALYSIS_FAILED
+}
+
+enum ComplianceLevel {
+  COMPLIANT
+  REQUIRES_REVIEW
+  BLOCKED
+}
+
+enum AuditStatus {
+  UNAUDITED
+  AUDITED
+  MULTIPLE_AUDITS
+  AUDIT_FAILED
+}
+
+enum AlertType {
+  HIGH_RISK_PROTOCOL
+  SUSPICIOUS_TRANSACTION
+  REGULATORY_CHANGE
+  SYSTEM_ERROR
+  MANUAL_REVIEW_REQUIRED
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
 }
