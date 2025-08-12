@@ -1,0 +1,125 @@
+INFO:     Started server process [19125]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     127.0.0.1:64469 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64474 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🚀 DEMO STARTING: Processing institutional request for jpmorgan_chase_demo
+INFO:services.multi_agent_system:🤖 Coordination Agent: Analyzing institutional request
+INFO:services.multi_agent_system:🤖 Protocol Research Agent: Gathering protocol data
+INFO:services.multi_agent_system:🤖 Risk Analysis Agent: Initializing risk models
+INFO:services.multi_agent_system:🤖 Regulatory Compliance Agent: Checking regulatory frameworks
+INFO:services.multi_agent_system:🤖 Protocol Research Agent: Analyzing market conditions
+INFO:services.multi_agent_system:🤖 Risk Analysis Agent: Running risk scenarios
+INFO:services.multi_agent_system:🤖 Regulatory Compliance Agent: Verifying compliance status
+INFO:services.multi_agent_system:🤖 Protocol Research Agent: Research analysis complete
+INFO:services.multi_agent_system:🤖 Risk Analysis Agent: Risk analysis complete
+INFO:services.multi_agent_system:🤖 Regulatory Compliance Agent: Regulatory analysis complete
+INFO:services.multi_agent_system:🤖 Coordination Agent: Facilitating agent debate
+INFO:services.multi_agent_system:🤖 Execution Agent: Preparing execution strategy
+INFO:services.multi_agent_system:🤖 Execution Agent: Preparing smart contract calls
+INFO:services.multi_agent_system:🤖 Execution Agent: Executing blockchain transactions
+INFO:services.multi_agent_system:🤖 Execution Agent: Investment execution complete
+INFO:     127.0.0.1:64481 - "POST /demo/institutional-request HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🚀 DEMO STARTING: Processing institutional request for blackrock_demo
+INFO:services.multi_agent_system:🤖 Coordination Agent: Analyzing institutional request
+INFO:services.multi_agent_system:🤖 Protocol Research Agent: Gathering protocol data
+INFO:services.multi_agent_system:🤖 Risk Analysis Agent: Initializing risk models
+INFO:services.multi_agent_system:🤖 Regulatory Compliance Agent: Checking regulatory frameworks
+INFO:services.multi_agent_system:🤖 Protocol Research Agent: Analyzing market conditions
+INFO:services.multi_agent_system:🤖 Risk Analysis Agent: Running risk scenarios
+INFO:services.multi_agent_system:🤖 Regulatory Compliance Agent: Verifying compliance status
+INFO:services.multi_agent_system:🤖 Protocol Research Agent: Research analysis complete
+INFO:services.multi_agent_system:🤖 Risk Analysis Agent: Risk analysis complete
+INFO:services.multi_agent_system:🤖 Regulatory Compliance Agent: Regulatory analysis complete
+INFO:services.multi_agent_system:🤖 Coordination Agent: Facilitating agent debate
+INFO:services.multi_agent_system:🤖 Execution Agent: Preparing execution strategy
+INFO:services.multi_agent_system:🤖 Execution Agent: Preparing smart contract calls
+INFO:services.multi_agent_system:🤖 Execution Agent: Executing blockchain transactions
+INFO:services.multi_agent_system:🤖 Execution Agent: Investment execution complete
+INFO:     127.0.0.1:64607 - "POST /demo/institutional-request HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64614 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64644 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64737 - "POST /demo/agents/reset HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64737 - "OPTIONS /demo/institutional-request HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🚀 DEMO STARTING: Processing institutional request for demo_institution_001
+INFO:services.multi_agent_system:🤖 Coordination Agent: Analyzing institutional request
+INFO:     127.0.0.1:64739 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🤖 Protocol Research Agent: Gathering protocol data
+INFO:services.multi_agent_system:🤖 Risk Analysis Agent: Initializing risk models
+INFO:services.multi_agent_system:🤖 Regulatory Compliance Agent: Checking regulatory frameworks
+INFO:     127.0.0.1:64739 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64739 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64739 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🤖 Protocol Research Agent: Analyzing market conditions
+INFO:services.multi_agent_system:🤖 Risk Analysis Agent: Running risk scenarios
+INFO:services.multi_agent_system:🤖 Regulatory Compliance Agent: Verifying compliance status
+INFO:     127.0.0.1:64739 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64743 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64743 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🤖 Protocol Research Agent: Research analysis complete
+INFO:services.multi_agent_system:🤖 Risk Analysis Agent: Risk analysis complete
+INFO:services.multi_agent_system:🤖 Regulatory Compliance Agent: Regulatory analysis complete
+INFO:services.multi_agent_system:🤖 Coordination Agent: Facilitating agent debate
+INFO:     127.0.0.1:64743 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64743 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64743 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64743 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64743 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64743 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🤖 Execution Agent: Preparing execution strategy
+INFO:     127.0.0.1:64743 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64743 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64748 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🤖 Execution Agent: Preparing smart contract calls
+INFO:     127.0.0.1:64748 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64748 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64748 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🤖 Execution Agent: Executing blockchain transactions
+INFO:     127.0.0.1:64748 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64748 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64748 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🤖 Execution Agent: Investment execution complete
+INFO:     127.0.0.1:64737 - "POST /demo/institutional-request HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64737 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65016 - "POST /demo/agents/reset HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🚀 DEMO STARTING: Processing institutional request for institutional_client_001
+INFO:services.multi_agent_system:🤖 Coordination Agent: Analyzing institutional request
+INFO:services.multi_agent_system:🤖 Protocol Research Agent: Gathering protocol data
+INFO:services.multi_agent_system:🤖 Risk Analysis Agent: Initializing risk models
+INFO:services.multi_agent_system:🤖 Regulatory Compliance Agent: Checking regulatory frameworks
+INFO:     127.0.0.1:65018 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65018 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65018 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65018 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🤖 Protocol Research Agent: Analyzing market conditions
+INFO:services.multi_agent_system:🤖 Risk Analysis Agent: Running risk scenarios
+INFO:services.multi_agent_system:🤖 Regulatory Compliance Agent: Verifying compliance status
+INFO:     127.0.0.1:65018 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65018 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65018 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🤖 Protocol Research Agent: Research analysis complete
+INFO:services.multi_agent_system:🤖 Risk Analysis Agent: Risk analysis complete
+INFO:services.multi_agent_system:🤖 Regulatory Compliance Agent: Regulatory analysis complete
+INFO:services.multi_agent_system:🤖 Coordination Agent: Facilitating agent debate
+INFO:     127.0.0.1:65018 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65018 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65022 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65022 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65022 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65022 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🤖 Execution Agent: Preparing execution strategy
+INFO:     127.0.0.1:65022 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65022 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65022 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🤖 Execution Agent: Preparing smart contract calls
+INFO:     127.0.0.1:65022 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65022 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65022 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🤖 Execution Agent: Executing blockchain transactions
+INFO:     127.0.0.1:65028 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65028 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65028 - "GET /demo/agents/status HTTP/1.1" 200 OK
+INFO:services.multi_agent_system:🤖 Execution Agent: Investment execution complete
+INFO:     127.0.0.1:65016 - "POST /demo/institutional-request HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65016 - "GET /demo/agents/status HTTP/1.1" 200 OK

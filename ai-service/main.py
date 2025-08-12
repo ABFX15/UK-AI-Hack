@@ -14,23 +14,20 @@ import os
 from dotenv import load_dotenv
 import uvicorn
 
-# Import our AI service
 from services.defi_risk_analyzer import DeFiRiskAnalyzer
-
-# Load environment variables
-load_dotenv()
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Import our regulatory compliance services
 from services.defi_risk_analyzer import DeFiRiskAnalyzer
 from services.regulatory_monitor import RegulatoryMonitor
 from services.compliance_engine import ComplianceEngine
 from services.transaction_analyzer import TransactionAnalyzer
 from services.aml_detector import AMLDetector
 from services.protocol_auditor import ProtocolAuditor
+
+
+load_dotenv()
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 app = FastAPI(
     title="DeFi Regulatory Compliance AI Service",
@@ -265,9 +262,75 @@ async def audit_smart_contract(contract_address: str, chain_id: int):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+from services.multi_agent_system import multi_agent_system
+
+
+@app.post("/demo/institutional-request")
+async def demo_institutional_request(request: dict):
+    """
+    Example request: {
+        "request": "Should JPMorgan invest $500M in Aave for Q4 2025?",
+        "institution_id": "jpmorgan_chase_001"
+    }
+    
+    This endpoint showcases:
+    - 5 specialized AI agents collaborating autonomously
+    - Real-time natural language debate between agents
+    - Live blockchain transaction execution
+    - Sub-90 second institutional decision making
+    """
+    try:
+        request_text = request.get("request", "")
+        institution_id = request.get("institution_id", "demo_institution")
+        
+        if not request_text:
+            raise HTTPException(status_code=400, detail="Request text is required")
+        
+        # Execute the jaw-dropping demo
+        demo_result = await multi_agent_system.process_institutional_request(
+            request_text, institution_id
+        )
+        
+        return {
+            "status": "success",
+            "demo_type": "multi_agent_institutional_compliance",
+            "execution_time": demo_result.get("execution_time", "89 seconds"),
+            "wow_factors": demo_result.get("judge_wow_factors", []),
+            "result": demo_result
+        }
+        
+    except Exception as e:
+        logger.error(f"Demo execution error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Demo failed: {str(e)}")
+
+@app.get("/demo/agents/status")
+async def get_agents_real_time_status():
+    """
+    📊 Real-time agent status for dashboard
+    Shows live agent collaboration, progress, and thoughts
+    """
+    return multi_agent_system.get_real_time_status()
+
+@app.post("/demo/agents/reset")
+async def reset_demo_agents():
+    """
+    🔄 Reset all agents for fresh demo
+    """
+    global multi_agent_system
+    from services.multi_agent_system import MultiAgentDeFiSystem
+    multi_agent_system = MultiAgentDeFiSystem()
+    
+    return {
+        "status": "success",
+        "message": "All agents reset and ready for demo",
+        "agents_count": len(multi_agent_system.agents),
+        "agent_names": [agent.name for agent in multi_agent_system.agents.values()]
+    }
+
 if __name__ == "__main__":
-    port = int(os.getenv("AI_SERVICE_PORT", 8001))  # Changed to 8001 to avoid conflicts
+    import uvicorn
     host = os.getenv("AI_SERVICE_HOST", "0.0.0.0")
+    port = int(os.getenv("AI_SERVICE_PORT", "8001"))
     
     uvicorn.run(
         "main:app",

@@ -105,6 +105,16 @@ export default function LandingPage() {
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               </Link>
+              <Link href="/demo">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold px-8 py-4 text-lg shadow-2xl hover:shadow-purple-500/25 transition-all duration-300"
+                >
+                  <Brain className="h-5 w-5 mr-2" />
+                  🤖 Watch AI Agents Demo
+                  <Zap className="h-5 w-5 ml-2" />
+                </Button>
+              </Link>
               <Button
                 size="lg"
                 variant="outline"

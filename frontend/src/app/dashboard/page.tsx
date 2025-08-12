@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -29,6 +30,7 @@ import {
   Building2,
   Eye,
   Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import {
   LiveProcesses,
@@ -88,6 +90,16 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex flex-col items-end gap-3">
+              <Link href="/demo">
+                <Button
+                  variant="outline"
+                  className="bg-white/10 border-white/30 text-white hover:bg-white hover:text-blue-600 backdrop-blur-sm transition-colors mb-2"
+                >
+                  <Brain className="h-4 w-4 mr-2" />
+                  AI Agent Platform
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </Link>
               <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
                 <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse shadow-lg shadow-emerald-400/50"></div>
                 <span className="font-semibold">Real-time Monitoring</span>
