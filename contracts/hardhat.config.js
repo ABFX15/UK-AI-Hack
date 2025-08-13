@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -24,6 +25,13 @@ module.exports = {
             accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
             chainId: 23452, // Update with actual Circle Layer chain ID
             gasPrice: 20000000000,
+        },
+        circleTestnet: {
+            url: "https://testnet-rpc.circlelayer.com",
+            accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+            chainId: 28525, // Circle Layer testnet chain ID
+            gasPrice: 21000000000, // 0.000021 CLAYER (minimum recommended)
+            timeout: 60000
         }
     },
     gasReporter: {
@@ -31,6 +39,23 @@ module.exports = {
         currency: "USD"
     },
     etherscan: {
-        apiKey: process.env.ETHERSCAN_API_KEY || ""
+        apiKey: {
+            // For Etherscan (if needed for other networks)
+            mainnet: process.env.ETHERSCAN_API_KEY || "",
+            goerli: process.env.ETHERSCAN_API_KEY || "",
+            sepolia: process.env.ETHERSCAN_API_KEY || "",
+            // Circle Layer doesn't need API key for verification
+            circleTestnet: "not-needed"
+        },
+        customChains: [
+            {
+                network: "circleTestnet",
+                chainId: 28525,
+                urls: {
+                    apiURL: "https://explorer-testnet.circlelayer.com/api",
+                    browserURL: "https://explorer-testnet.circlelayer.com"
+                }
+            }
+        ]
     }
 };

@@ -1,0 +1,2 @@
+hello
+npx hardhat run scripts/deploy-circle.js --network circleTestnet

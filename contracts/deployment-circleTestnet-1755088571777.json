@@ -1,0 +1,24 @@
+{
+  "network": "circleTestnet",
+  "chainId": 28525,
+  "deployer": "0x88FE2b6BC5E636b556Ffa4e943b3c9Ec4E2CcF9F",
+  "deployerBalance": "1.0",
+  "contracts": {
+    "RegulatoryOracle": "0x820BD166B883B508BDCb7516bD15ea798bDaF6d7",
+    "TransactionMonitor": "0xcC3FBa07565aCe3Ca332C2b5aC4fB8dE65b95923",
+    "InstitutionalTreasury": "0x252Ef808de409Bc6718B56e1bBcAd52037152D42"
+  },
+  "gasEstimates": {
+    "RegulatoryOracle": "54553",
+    "TransactionMonitor": "54553",
+    "InstitutionalTreasury": "54553"
+  },
+  "deployedAt": "2025-08-13T12:36:11.777Z",
+  "explorerUrls": {
+    "RegulatoryOracle": "https://testnet.circlelayer.com/address/0x820BD166B883B508BDCb7516bD15ea798bDaF6d7",
+    "TransactionMonitor": "https://testnet.circlelayer.com/address/0xcC3FBa07565aCe3Ca332C2b5aC4fB8dE65b95923",
+    "InstitutionalTreasury": "https://testnet.circlelayer.com/address/0x252Ef808de409Bc6718B56e1bBcAd52037152D42"
+  },
+  "setupCompleted": true,
+  "setupAt": "2025-08-13T12:37:50.245Z"
+}

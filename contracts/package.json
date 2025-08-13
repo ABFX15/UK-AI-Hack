@@ -16,5 +16,8 @@
     "hardhat": "^2.19.0",
     "hardhat-gas-reporter": "^1.0.9",
     "solidity-coverage": "^0.8.5"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1"
   }
 }
