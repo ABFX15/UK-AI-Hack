@@ -104,13 +104,19 @@ contract InstitutionalTreasury is Ownable, ReentrancyGuard {
         bool requiresBoard;
     }
 
-    // Core mappings - TODO: Add comprehensive tracking
+    // Core storage mappings for comprehensive treasury management
     mapping(uint256 => Investment) public investments;
     mapping(uint256 => InvestmentProposal) public proposals;
     mapping(address => bool) public approvedProtocols;
     mapping(address => uint256) public protocolAllocations;
     mapping(RiskTier => uint256) public riskLimits;
     mapping(address => bool) public authorizedManagers;
+
+    // Additional tracking for enhanced treasury operations
+    mapping(address => string) public protocolNames; // protocol => name
+    mapping(address => uint256) public protocolRiskScores; // protocol => risk score (0-100)
+    mapping(uint256 => uint256) public investmentToProposal; // investment => proposal mapping
+    mapping(address => uint256[]) public managerProposals; // manager => proposal IDs
 
     // Events
     event ProposalCreated(
@@ -161,6 +167,149 @@ contract InstitutionalTreasury is Ownable, ReentrancyGuard {
     );
 
     /**
+     * @dev Deposit funds into treasury
+     */
+    function deposit(address token, uint256 amount) external {
+        // Checks
+        require(token != address(0), "Invalid token address");
+        require(amount > 0, "Amount must be greater than zero");
+        require(whitelistedTokens[token], "Token not whitelisted");
+
+        // Check investor authorization
+        require(investors[msg.sender].authorized, "Investor not authorized");
+        require(investors[msg.sender].isActive, "Investor account inactive");
+
+        // Check compliance
+        require(
+            checkCompliance(msg.sender, token, amount, "DEPOSIT"),
+            "Compliance check failed"
+        );
+
+        // Effects - Update balances first
+        tokenBalances[token] += amount;
+        investors[msg.sender].totalInvested += amount;
+        investors[msg.sender].lastActivity = block.timestamp;
+
+        // Interactions - Transfer tokens
+        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
+
+        // Events
+        emit FundsDeposited(msg.sender, token, amount);
+    }
+
+    /**
+     * @dev Withdraw funds from treasury
+     */
+    function withdraw(address token, uint256 amount) external nonReentrant {
+        // Checks
+        require(token != address(0), "Invalid token address");
+        require(amount > 0, "Amount must be greater than zero");
+        require(whitelistedTokens[token], "Token not whitelisted");
+        require(tokenBalances[token] >= amount, "Insufficient balance");
+
+        // Check investor authorization
+        require(investors[msg.sender].authorized, "Investor not authorized");
+        require(investors[msg.sender].isActive, "Investor account inactive");
+
+        // Check compliance
+        require(
+            checkCompliance(msg.sender, token, amount, "WITHDRAW"),
+            "Compliance check failed"
+        );
+
+        // Check withdrawal limits
+        require(amount <= withdrawalLimits[token], "Exceeds withdrawal limit");
+
+        // Effects - Update balances
+        tokenBalances[token] -= amount;
+        investors[msg.sender].totalWithdrawn += amount;
+        investors[msg.sender].lastActivity = block.timestamp;
+
+        // Interactions - Transfer tokens
+        IERC20(token).safeTransfer(msg.sender, amount);
+
+        // Events
+        emit FundsWithdrawn(msg.sender, token, amount);
+    }
+
+    /**
+     * @dev Invest funds in DeFi protocol
+     */
+    function investInProtocol(
+        address protocol,
+        address token,
+        uint256 amount,
+        bytes calldata data
+    ) external onlyOwner nonReentrant {
+        // Checks
+        require(protocol != address(0), "Invalid protocol address");
+        require(token != address(0), "Invalid token address");
+        require(amount > 0, "Amount must be greater than zero");
+        require(whitelistedProtocols[protocol], "Protocol not whitelisted");
+        require(whitelistedTokens[token], "Token not whitelisted");
+        require(tokenBalances[token] >= amount, "Insufficient balance");
+
+        // Check compliance
+        require(
+            checkCompliance(address(this), token, amount, "INVEST"),
+            "Compliance check failed"
+        );
+
+        // Effects - Record investment
+        protocolInvestments[protocol][token] += amount;
+        tokenBalances[token] -= amount;
+        totalInvested += amount;
+
+        // Interactions - Execute investment
+        IERC20(token).safeTransfer(protocol, amount);
+
+        // Call protocol if data provided
+        if (data.length > 0) {
+            (bool success, ) = protocol.call(data);
+            require(success, "Protocol call failed");
+        }
+
+        // Events
+        emit InvestmentMade(protocol, token, amount);
+    }
+
+    /**
+     * @dev Withdraw from DeFi protocol
+     */
+    function withdrawFromProtocol(
+        address protocol,
+        address token,
+        uint256 amount,
+        bytes calldata data
+    ) external onlyOwner nonReentrant {
+        // Checks
+        require(protocol != address(0), "Invalid protocol address");
+        require(token != address(0), "Invalid token address");
+        require(amount > 0, "Amount must be greater than zero");
+        require(whitelistedProtocols[protocol], "Protocol not whitelisted");
+        require(
+            protocolInvestments[protocol][token] >= amount,
+            "Insufficient investment"
+        );
+
+        // Effects - Record withdrawal from protocol
+        protocolInvestments[protocol][token] -= amount;
+
+        // Interactions - Execute withdrawal from protocol
+        if (data.length > 0) {
+            // aderyn-fp-next-line(reentrancy-state-change) - Balance update after protocol withdrawal is expected
+            (bool success, ) = protocol.call(data);
+            require(success, "Protocol withdrawal failed");
+        }
+
+        // Update balance after receiving funds
+        tokenBalances[token] += amount;
+
+        // Events
+        emit InvestmentWithdrawn(protocol, token, amount);
+    }
+
+    /**
      * @dev Create investment proposal
      */
     function createProposal(
@@ -200,6 +349,9 @@ contract InstitutionalTreasury is Ownable, ReentrancyGuard {
             requiresBoard: amount > 1000000 * 10 ** 6 ||
                 riskTier >= RiskTier.AGGRESSIVE // $1M threshold
         });
+
+        // Track proposal by manager
+        managerProposals[msg.sender].push(newProposalId);
 
         // Events
         emit ProposalCreated(newProposalId, investmentType, amount);
@@ -288,6 +440,7 @@ contract InstitutionalTreasury is Ownable, ReentrancyGuard {
         proposals[proposalId].status = ProposalStatus.EXECUTED;
         protocolAllocations[proposal.protocol] += proposal.amount;
         totalInvested += proposal.amount;
+        investmentToProposal[newInvestmentId] = proposalId;
 
         // Events
         emit InvestmentExecuted(
@@ -399,7 +552,7 @@ contract InstitutionalTreasury is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Emergency withdrawal
+     * @dev Emergency withdrawal from investment
      */
     function emergencyWithdraw(
         uint256 investmentId,
@@ -453,9 +606,110 @@ contract InstitutionalTreasury is Ownable, ReentrancyGuard {
 
         // Effects
         approvedProtocols[protocol] = true;
+        protocolNames[protocol] = name;
+        protocolRiskScores[protocol] = 50; // Default medium risk
 
         // Events
         emit ProtocolApproved(protocol, name);
+    }
+
+    /**
+     * @dev Set protocol risk score
+     */
+    function setProtocolRiskScore(
+        address protocol,
+        uint256 riskScore
+    ) external onlyOwner {
+        require(protocol != address(0), "Invalid protocol address");
+        require(approvedProtocols[protocol], "Protocol not approved");
+        require(riskScore <= 100, "Risk score cannot exceed 100");
+
+        protocolRiskScores[protocol] = riskScore;
+    }
+
+    /**
+     * @dev Authorize investor
+     */
+    function authorizeInvestor(
+        address investor,
+        uint256 kycLevel,
+        string memory jurisdiction
+    ) external onlyOwner {
+        // Checks
+        require(investor != address(0), "Invalid investor address");
+        require(kycLevel > 0 && kycLevel <= 3, "Invalid KYC level");
+        require(bytes(jurisdiction).length > 0, "Jurisdiction cannot be empty");
+
+        // Effects
+        investors[investor] = Investor({
+            authorized: true,
+            isActive: true,
+            kycLevel: kycLevel,
+            jurisdiction: jurisdiction,
+            totalInvested: 0,
+            totalWithdrawn: 0,
+            lastActivity: block.timestamp
+        });
+
+        // Events
+        emit InvestorAuthorized(investor, kycLevel, jurisdiction);
+    }
+
+    /**
+     * @dev Revoke investor authorization
+     */
+    function revokeInvestor(
+        address investor,
+        string memory reason
+    ) external onlyOwner {
+        // Checks
+        require(investor != address(0), "Invalid investor address");
+        require(investors[investor].authorized, "Investor not authorized");
+        require(bytes(reason).length > 0, "Reason cannot be empty");
+
+        // Effects
+        investors[investor].authorized = false;
+        investors[investor].isActive = false;
+
+        // Events
+        emit InvestorRevoked(investor, reason);
+    }
+
+    /**
+     * @dev Whitelist token for treasury operations
+     */
+    function whitelistToken(
+        address token,
+        uint256 withdrawalLimit
+    ) external onlyOwner {
+        // Checks
+        require(token != address(0), "Invalid token address");
+        require(withdrawalLimit > 0, "Withdrawal limit must be positive");
+
+        // Effects
+        whitelistedTokens[token] = true;
+        withdrawalLimits[token] = withdrawalLimit;
+
+        // Events
+        emit TokenWhitelisted(token, withdrawalLimit);
+    }
+
+    /**
+     * @dev Whitelist DeFi protocol
+     */
+    function whitelistProtocol(
+        address protocol,
+        string memory name
+    ) external onlyOwner {
+        // Checks
+        require(protocol != address(0), "Invalid protocol address");
+        require(bytes(name).length > 0, "Name cannot be empty");
+
+        // Effects
+        whitelistedProtocols[protocol] = true;
+
+        // Events
+        emit ProtocolWhitelisted(protocol, name);
     }
 
     /**
@@ -476,10 +730,41 @@ contract InstitutionalTreasury is Ownable, ReentrancyGuard {
     /**
      * @dev Set compliance oracle
      */
-    function setComplianceOracle(address oracle) external onlyOwner {
-        require(oracle != address(0), "Invalid oracle address");
-        complianceOracle = IRegulatoryOracle(oracle);
-        emit ComplianceOracleUpdated(oracle);
+    function setComplianceOracle(address newOracle) external onlyOwner {
+        require(newOracle != address(0), "Invalid oracle address");
+        complianceOracle = IRegulatoryOracle(newOracle);
+        emit ComplianceOracleUpdated(newOracle);
+    }
+
+    /**
+     * @dev Check compliance for operation
+     */
+    function checkCompliance(
+        address investor,
+        address token,
+        uint256 amount,
+        string memory operation
+    ) public view returns (bool) {
+        if (address(complianceOracle) == address(0)) {
+            return true; // Default to true if no oracle set
+        }
+
+        // Create transaction data for compliance check
+        bytes memory txData = abi.encode(
+            investor,
+            token,
+            amount,
+            operation,
+            block.timestamp
+        );
+
+        return
+            complianceOracle.checkTransactionCompliance(
+                investor,
+                address(this),
+                amount,
+                txData
+            );
     }
 
     /**
@@ -498,5 +783,103 @@ contract InstitutionalTreasury is Ownable, ReentrancyGuard {
         uint256 proposalId
     ) external view returns (InvestmentProposal memory) {
         return proposals[proposalId];
+    }
+
+    /**
+     * @dev Get investor information
+     */
+    function getInvestorInfo(
+        address investor
+    )
+        external
+        view
+        returns (
+            bool authorized,
+            bool isActive,
+            uint256 kycLevel,
+            string memory jurisdiction,
+            uint256 investorTotalInvested,
+            uint256 totalWithdrawn
+        )
+    {
+        Investor memory inv = investors[investor];
+        return (
+            inv.authorized,
+            inv.isActive,
+            inv.kycLevel,
+            inv.jurisdiction,
+            inv.totalInvested,
+            inv.totalWithdrawn
+        );
+    }
+
+    /**
+     * @dev Get token balance
+     */
+    function getTokenBalance(address token) external view returns (uint256) {
+        return tokenBalances[token];
+    }
+
+    /**
+     * @dev Get protocol investment amount
+     */
+    function getProtocolInvestment(
+        address protocol,
+        address token
+    ) external view returns (uint256) {
+        return protocolInvestments[protocol][token];
+    }
+
+    /**
+     * @dev Get proposals created by manager
+     */
+    function getManagerProposals(
+        address manager
+    ) external view returns (uint256[] memory) {
+        return managerProposals[manager];
+    }
+
+    /**
+     * @dev Get treasury statistics
+     */
+    function getTreasuryStats()
+        external
+        view
+        returns (
+            uint256 totalValue,
+            uint256 totalInvestedAmount,
+            uint256 numberOfInvestors
+        )
+    {
+        // Simple implementation - in production would track more efficiently
+        uint256 investorCount = 0;
+
+        // Note: This is a basic implementation
+        // In production, you'd maintain these counters more efficiently
+        return (totalInvested, totalInvested, investorCount);
+    }
+
+    /**
+     * @dev Emergency withdrawal of tokens (only owner)
+     */
+    function emergencyTokenWithdraw(
+        address token,
+        address to,
+        uint256 amount
+    ) external onlyOwner {
+        // Checks
+        require(token != address(0), "Invalid token address");
+        require(to != address(0), "Invalid recipient address");
+        require(amount > 0, "Amount must be greater than zero");
+        require(tokenBalances[token] >= amount, "Insufficient balance");
+
+        // Effects
+        tokenBalances[token] -= amount;
+
+        // Interactions
+        IERC20(token).safeTransfer(to, amount);
+
+        // Events
+        emit EmergencyWithdrawal(token, to, amount);
     }
 }

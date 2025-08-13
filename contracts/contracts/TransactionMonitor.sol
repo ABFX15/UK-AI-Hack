@@ -43,12 +43,15 @@ contract TransactionMonitor is Ownable {
         string notes;
     }
 
-    // Core mappings - TODO: Implement detailed tracking
+    // Core storage mappings for comprehensive transaction monitoring
     mapping(uint256 => TransactionAlert) public alerts;
     mapping(address => bool) public blacklistedAddresses;
     mapping(address => bool) public whitelistedProtocols;
     mapping(address => uint256) public dailyTransactionVolume;
     mapping(address => uint256) public riskScores;
+    mapping(address => uint256) public lastResetTime; // For daily volume tracking
+    mapping(address => uint256) public totalTransactionCount; // Lifetime transaction count
+    mapping(address => mapping(address => uint256)) public pairTransactionCount; // from => to => count
 
     // Events
     event TransactionFlagged(
@@ -128,8 +131,24 @@ contract TransactionMonitor is Ownable {
             return (true, AlertType.SUSPICIOUS_PATTERN);
         }
 
-        // Effects - Update daily volume
+        // Check for suspicious patterns (frequent transactions between same addresses)
+        pairTransactionCount[from][to]++;
+        if (pairTransactionCount[from][to] > 10) {
+            // More than 10 transactions in session
+            _createAlert(
+                from,
+                to,
+                amount,
+                protocol,
+                AlertType.SUSPICIOUS_PATTERN,
+                AlertSeverity.WARNING
+            );
+        }
+
+        // Effects - Update tracking data
         dailyTransactionVolume[from] = dailyVolume;
+        totalTransactionCount[from]++;
+        totalTransactionCount[to]++;
 
         return (false, AlertType.LARGE_TRANSACTION);
     }

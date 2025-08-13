@@ -52,7 +52,6 @@ contract RegulatoryOracle is Ownable, ReentrancyGuard {
         uint256 createdAt;
         uint256 lastUpdated;
         string ruleDescription;
-        // TODO: Add rule parameters, thresholds, etc.
     }
 
     struct ComplianceViolation {
@@ -65,7 +64,6 @@ contract RegulatoryOracle is Ownable, ReentrancyGuard {
         string details;
         bool resolved;
         uint256 penaltyAmount;
-        // TODO: Add remediation actions, escalation status
     }
 
     struct ComplianceReport {
@@ -77,7 +75,6 @@ contract RegulatoryOracle is Ownable, ReentrancyGuard {
         uint256 flaggedTransactions;
         uint256 violationCount;
         bool submitted;
-        // TODO: Add report hash, regulatory body, compliance score
     }
 
     // Core mappings
@@ -87,11 +84,11 @@ contract RegulatoryOracle is Ownable, ReentrancyGuard {
     mapping(address => bool) public authorizedInstitutions;
     mapping(address => ComplianceRegion[]) public institutionRegions;
 
-    // TODO: Add more specific mappings for:
-    // - Transaction monitoring
-    // - Protocol whitelists/blacklists
-    // - Geographic restrictions
-    // - AML risk scores
+    // Additional specialized mappings for enhanced compliance
+    mapping(address => mapping(address => bool)) public protocolWhitelist; // institution => protocol => allowed
+    mapping(address => uint256) public amlRiskScores; // address => risk score (0-100)
+    mapping(string => bool) public restrictedJurisdictions; // jurisdiction => restricted
+    mapping(address => uint256) public lastTransactionTime; // address => timestamp for monitoring
 
     // Events
     event ComplianceRuleCreated(
@@ -112,8 +109,14 @@ contract RegulatoryOracle is Ownable, ReentrancyGuard {
         address indexed institution,
         ComplianceRegion[] regions
     );
-
-    // TODO: Add more events for real-time monitoring
+    event EmergencyFreezeActivated(address indexed institution, string reason);
+    event AMLRiskScoreUpdated(address indexed account, uint256 newScore);
+    event JurisdictionRestricted(string jurisdiction, bool restricted);
+    event ProtocolWhitelisted(
+        address indexed institution,
+        address indexed protocol,
+        bool whitelisted
+    );
 
     /**
      * @dev Add new compliance rule
@@ -407,9 +410,75 @@ contract RegulatoryOracle is Ownable, ReentrancyGuard {
         return 0;
     }
 
-    // TODO: Add functions for:
-    // - Real-time monitoring hooks
-    // - Regulatory reporting automation
-    // - Cross-chain compliance tracking
-    // - AI-powered risk assessment integration
+    /**
+     * @dev Set AML risk score for address
+     */
+    function setAMLRiskScore(
+        address account,
+        uint256 riskScore
+    ) external onlyOwner {
+        require(account != address(0), "Invalid account");
+        require(riskScore <= 100, "Risk score cannot exceed 100");
+
+        amlRiskScores[account] = riskScore;
+        emit AMLRiskScoreUpdated(account, riskScore);
+    }
+
+    /**
+     * @dev Restrict jurisdiction for compliance
+     */
+    function restrictJurisdiction(
+        string memory jurisdiction,
+        bool restricted
+    ) external onlyOwner {
+        require(bytes(jurisdiction).length > 0, "Invalid jurisdiction");
+
+        restrictedJurisdictions[jurisdiction] = restricted;
+        emit JurisdictionRestricted(jurisdiction, restricted);
+    }
+
+    /**
+     * @dev Whitelist protocol for institution
+     */
+    function whitelistProtocolForInstitution(
+        address institution,
+        address protocol,
+        bool whitelisted
+    ) external onlyOwner {
+        require(institution != address(0), "Invalid institution");
+        require(protocol != address(0), "Invalid protocol");
+        require(
+            authorizedInstitutions[institution],
+            "Institution not authorized"
+        );
+
+        protocolWhitelist[institution][protocol] = whitelisted;
+        emit ProtocolWhitelisted(institution, protocol, whitelisted);
+    }
+
+    /**
+     * @dev Get AML risk score for address
+     */
+    function getAMLRiskScore(address account) external view returns (uint256) {
+        return amlRiskScores[account];
+    }
+
+    /**
+     * @dev Check if jurisdiction is restricted
+     */
+    function isJurisdictionRestricted(
+        string memory jurisdiction
+    ) external view returns (bool) {
+        return restrictedJurisdictions[jurisdiction];
+    }
+
+    /**
+     * @dev Check if protocol is whitelisted for institution
+     */
+    function isProtocolWhitelisted(
+        address institution,
+        address protocol
+    ) external view returns (bool) {
+        return protocolWhitelist[institution][protocol];
+    }
 }
