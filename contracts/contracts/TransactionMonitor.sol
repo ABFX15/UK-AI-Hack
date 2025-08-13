@@ -61,79 +61,215 @@ contract TransactionMonitor is Ownable {
 
     /**
      * @dev Monitor transaction in real-time
-     * TODO: Implement comprehensive monitoring logic
      */
     function monitorTransaction(
-        address /*from*/,
-        address /*to*/,
-        uint256 /*amount*/,
-        address /*protocol*/,
+        address from,
+        address to,
+        uint256 amount,
+        address protocol,
         bytes calldata /*data*/
-    ) external pure returns (bool shouldFlag, AlertType alertType) {
-        // TODO: Implement real-time monitoring:
-        // - Check transaction size against limits
-        // - Analyze transaction patterns
-        // - Verify addresses against blacklists
-        // - Check protocol compliance status
-        // - Analyze transaction metadata
+    ) external returns (bool shouldFlag, AlertType alertType) {
+        // Checks
+        require(from != address(0) && to != address(0), "Invalid addresses");
+        require(amount > 0, "Amount must be greater than zero");
+
+        // Check for large transactions
+        if (amount > 100000 * 10 ** 6) {
+            // $100,000 USDC
+            _createAlert(
+                from,
+                to,
+                amount,
+                protocol,
+                AlertType.LARGE_TRANSACTION,
+                AlertSeverity.WARNING
+            );
+            return (true, AlertType.LARGE_TRANSACTION);
+        }
+
+        // Check blacklisted addresses
+        if (blacklistedAddresses[from] || blacklistedAddresses[to]) {
+            _createAlert(
+                from,
+                to,
+                amount,
+                protocol,
+                AlertType.BLACKLISTED_ADDRESS,
+                AlertSeverity.CRITICAL
+            );
+            return (true, AlertType.BLACKLISTED_ADDRESS);
+        }
+
+        // Check protocol whitelist
+        if (!whitelistedProtocols[protocol]) {
+            _createAlert(
+                from,
+                to,
+                amount,
+                protocol,
+                AlertType.SUSPICIOUS_PATTERN,
+                AlertSeverity.WARNING
+            );
+            return (true, AlertType.SUSPICIOUS_PATTERN);
+        }
+
+        // Check daily volume limits
+        uint256 dailyVolume = dailyTransactionVolume[from] + amount;
+        if (dailyVolume > 1000000 * 10 ** 6) {
+            // $1M daily limit
+            _createAlert(
+                from,
+                to,
+                amount,
+                protocol,
+                AlertType.SUSPICIOUS_PATTERN,
+                AlertSeverity.CRITICAL
+            );
+            return (true, AlertType.SUSPICIOUS_PATTERN);
+        }
+
+        // Effects - Update daily volume
+        dailyTransactionVolume[from] = dailyVolume;
+
         return (false, AlertType.LARGE_TRANSACTION);
     }
 
     /**
      * @dev Create alert for suspicious transaction
-     * TODO: Implement alert creation and notification system
      */
     function createAlert(
-        address /*fromAddress*/,
-        address /*toAddress*/,
-        uint256 /*amount*/,
-        address /*protocol*/,
-        AlertType /*alertType*/,
-        AlertSeverity /*severity*/
+        address fromAddress,
+        address toAddress,
+        uint256 amount,
+        address protocol,
+        AlertType alertType,
+        AlertSeverity severity
     ) external onlyOwner returns (uint256) {
-        // TODO: Implement alert creation
+        return
+            _createAlert(
+                fromAddress,
+                toAddress,
+                amount,
+                protocol,
+                alertType,
+                severity
+            );
+    }
+
+    /**
+     * @dev Internal function to create alert following CEI pattern
+     */
+    function _createAlert(
+        address fromAddress,
+        address toAddress,
+        uint256 amount,
+        address protocol,
+        AlertType alertType,
+        AlertSeverity severity
+    ) internal returns (uint256) {
+        // Checks
+        require(fromAddress != address(0), "Invalid from address");
+        require(toAddress != address(0), "Invalid to address");
+        require(amount > 0, "Amount must be greater than zero");
+
+        // Effects
         _alertIdCounter++;
-        return _alertIdCounter;
+        uint256 newAlertId = _alertIdCounter;
+
+        alerts[newAlertId] = TransactionAlert({
+            alertId: newAlertId,
+            fromAddress: fromAddress,
+            toAddress: toAddress,
+            amount: amount,
+            protocol: protocol,
+            alertType: alertType,
+            severity: severity,
+            timestamp: block.timestamp,
+            investigated: false,
+            notes: ""
+        });
+
+        // Interactions (Events)
+        emit TransactionFlagged(newAlertId, fromAddress, alertType);
+
+        return newAlertId;
     }
 
     /**
      * @dev Update risk score for address
-     * TODO: Implement ML-based risk scoring
      */
     function updateRiskScore(
-        address /*account*/,
-        uint256 /*newScore*/
+        address account,
+        uint256 newScore
     ) external onlyOwner {
-        // TODO: Implement risk score updates based on:
-        // - Transaction history
-        // - Protocol interactions
-        // - Geographic indicators
-        // - KYC status
+        // Checks
+        require(account != address(0), "Invalid account");
+        require(newScore <= 100, "Risk score cannot exceed 100");
+
+        // Effects
+        riskScores[account] = newScore;
+
+        // If high risk, consider flagging
+        if (newScore >= 80) {
+            _createAlert(
+                account,
+                address(0),
+                0,
+                address(0),
+                AlertType.SUSPICIOUS_PATTERN,
+                AlertSeverity.WARNING
+            );
+        }
     }
 
     /**
      * @dev Blacklist suspicious address
-     * TODO: Implement address blacklisting with appeals process
      */
     function blacklistAddress(
-        address /*account*/,
-        string memory /*reason*/
+        address account,
+        string memory reason
     ) external onlyOwner {
-        // TODO: Implement blacklisting logic
+        // Checks
+        require(account != address(0), "Invalid account");
+        require(bytes(reason).length > 0, "Reason cannot be empty");
+
+        // Effects
+        blacklistedAddresses[account] = true;
+        riskScores[account] = 100; // Maximum risk
+
+        // Interactions (Events)
+        emit AddressBlacklisted(account, reason);
+    }
+
+    /**
+     * @dev Whitelist protocol for monitoring
+     */
+    function whitelistProtocol(
+        address protocol,
+        string memory name
+    ) external onlyOwner {
+        // Checks
+        require(protocol != address(0), "Invalid protocol");
+        require(bytes(name).length > 0, "Name cannot be empty");
+
+        // Effects
+        whitelistedProtocols[protocol] = true;
+
+        // Interactions (Events)
+        emit ProtocolWhitelisted(protocol, name);
     }
 
     /**
      * @dev Get transaction analysis
-     * TODO: Implement comprehensive transaction analysis
      */
     function analyzeTransaction(
-        address /*from*/,
-        address /*to*/,
-        uint256 /*amount*/,
-        address /*protocol*/
+        address from,
+        address to,
+        uint256 amount,
+        address protocol
     )
         external
-        pure
+        view
         returns (
             uint256 riskScore,
             bool requiresKYC,
@@ -141,7 +277,80 @@ contract TransactionMonitor is Ownable {
             string memory analysis
         )
     {
-        // TODO: Implement transaction analysis
-        return (0, false, true, "Analysis pending");
+        // Check risk factors
+        uint256 fromRisk = riskScores[from];
+        uint256 toRisk = riskScores[to];
+        uint256 protocolRisk = whitelistedProtocols[protocol] ? 10 : 50;
+        uint256 amountRisk = amount > 100000 * 10 ** 6 ? 30 : 10; // High amount risk
+
+        // Calculate composite risk score
+        uint256 compositeRisk = (fromRisk +
+            toRisk +
+            protocolRisk +
+            amountRisk) / 4;
+
+        // Determine compliance
+        bool compliant = !blacklistedAddresses[from] &&
+            !blacklistedAddresses[to] &&
+            compositeRisk < 70;
+
+        // KYC requirement
+        bool kyc = compositeRisk > 50 || amount > 50000 * 10 ** 6;
+
+        string memory analysisResult;
+        if (compositeRisk < 30) {
+            analysisResult = "Low risk transaction";
+        } else if (compositeRisk < 70) {
+            analysisResult = "Medium risk - monitor closely";
+        } else {
+            analysisResult = "High risk - requires investigation";
+        }
+
+        return (compositeRisk, kyc, compliant, analysisResult);
+    }
+
+    /**
+     * @dev Mark alert as investigated
+     */
+    function markAlertInvestigated(
+        uint256 alertId,
+        string memory notes
+    ) external onlyOwner {
+        // Checks
+        require(alerts[alertId].alertId != 0, "Alert does not exist");
+        require(!alerts[alertId].investigated, "Alert already investigated");
+
+        // Effects
+        alerts[alertId].investigated = true;
+        alerts[alertId].notes = notes;
+    }
+
+    /**
+     * @dev Get alerts for address
+     */
+    function getAlertsForAddress(
+        address account
+    ) external view returns (uint256[] memory alertIds) {
+        // Simple implementation - in production would use more efficient storage
+        uint256[] memory tempAlerts = new uint256[](_alertIdCounter);
+        uint256 count = 0;
+
+        for (uint256 i = 1; i <= _alertIdCounter; i++) {
+            if (
+                alerts[i].fromAddress == account ||
+                alerts[i].toAddress == account
+            ) {
+                tempAlerts[count] = i;
+                count++;
+            }
+        }
+
+        // Resize array to actual count
+        alertIds = new uint256[](count);
+        for (uint256 i = 0; i < count; i++) {
+            alertIds[i] = tempAlerts[i];
+        }
+
+        return alertIds;
     }
 }
