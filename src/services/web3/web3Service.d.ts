@@ -1,0 +1,2 @@
+export {};
+//# sourceMappingURL=web3Service.d.ts.map

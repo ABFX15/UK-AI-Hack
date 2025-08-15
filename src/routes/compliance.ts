@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { PrismaClient } from '../../generated/prisma/index.js';
+import { PrismaClient } from '../../generated/prisma';
 import axios from 'axios';
 
 const router = Router();
@@ -54,7 +54,7 @@ router.post('/analyze-protocol', async (req, res) => {
         console.error('Protocol analysis error:', error);
         res.status(500).json({
             error: 'Failed to analyze protocol',
-            message: error.message
+            message: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 });
@@ -105,7 +105,7 @@ router.post('/analyze-transaction', async (req, res) => {
         console.error('AML analysis error:', error);
         res.status(500).json({
             error: 'Failed to analyze transaction',
-            message: error.message
+            message: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 });
@@ -153,7 +153,7 @@ router.get('/report/:institutionId', async (req, res) => {
         console.error('Report generation error:', error);
         res.status(500).json({
             error: 'Failed to generate compliance report',
-            message: error.message
+            message: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 });
@@ -201,7 +201,7 @@ router.get('/history/:institutionId', async (req, res) => {
         console.error('History retrieval error:', error);
         res.status(500).json({
             error: 'Failed to retrieve compliance history',
-            message: error.message
+            message: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 });
@@ -268,7 +268,7 @@ router.get('/dashboard/:institutionId', async (req, res) => {
         console.error('Dashboard data error:', error);
         res.status(500).json({
             error: 'Failed to retrieve dashboard data',
-            message: error.message
+            message: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 });
@@ -316,7 +316,7 @@ router.put('/settings/:institutionId', async (req, res) => {
         console.error('Settings update error:', error);
         res.status(500).json({
             error: 'Failed to update compliance settings',
-            message: error.message
+            message: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 });

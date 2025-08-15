@@ -48,7 +48,7 @@ router.post('/demo/analyze-protocol', async (req, res) => {
             }
         };
 
-        const result = demoProtocols[protocol_address.toLowerCase()] || {
+        const result = demoProtocols[protocol_address.toLowerCase() as keyof typeof demoProtocols] || {
             protocol_name: `Unknown Protocol ${protocol_address.substring(0, 8)}`,
             risk_score: 0.75,
             risk_level: "HIGH",

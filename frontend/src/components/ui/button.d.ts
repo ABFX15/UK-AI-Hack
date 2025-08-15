@@ -2,7 +2,7 @@ import * as React from "react";
 import { type VariantProps } from "class-variance-authority";
 declare const buttonVariants: (props?: ({
     variant?: "link" | "outline" | "default" | "secondary" | "destructive" | "ghost" | null | undefined;
-    size?: "sm" | "default" | "lg" | "icon" | null | undefined;
+    size?: "lg" | "sm" | "default" | "icon" | null | undefined;
 } & import("class-variance-authority/types").ClassProp) | undefined) => string;
 declare function Button({ className, variant, size, asChild, ...props }: React.ComponentProps<"button"> & VariantProps<typeof buttonVariants> & {
     asChild?: boolean;

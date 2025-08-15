@@ -21,13 +21,11 @@ This guide walks you through deploying the DeFi Regulatory Compliance Platform t
 
 The Circle Layer Testnet is configured in `hardhat.config.js`:
 
-- **RPC URL**: https://testnet.circlelayer.com
-- **Chain ID**: 23453 (may need verification)
-- **Gas Price**: 1 gwei
-- **Block Explorer**: https://testnet.circlelayer.com (Circle Layer's own explorer, NOT Etherscan)
-- **Explorer API**: https://testnet.circlelayer.com/api
-- **Gas Price**: 1 gwei
-- **Block Explorer**: https://testnet.circlelayer.com
+- **RPC URL**: https://testnet-rpc.circlelayer.com
+- **Chain ID**: 28525
+- **Gas Price**: 21 gwei (0.000021 CLAYER)
+- **Block Explorer**: https://explorer-testnet.circlelayer.com (Circle Layer's own explorer, NOT Etherscan)
+- **Explorer API**: https://explorer-testnet.circlelayer.com/api
 
 ### Deployment Steps
 

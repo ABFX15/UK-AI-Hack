@@ -1,5 +1,5 @@
 export { AutomationMetrics } from './AutomationMetrics';
-export { ComplianceProcesses as LiveProcesses } from './ComplianceProcesses';
+export { LiveProcesses } from './LiveProcesses';
 export { IntegrationPanel } from './IntegrationPanel';
-export { WorkflowVisualization } from './WorkflowVisualization';
+export { ComplianceWorkflow as WorkflowVisualization } from './ComplianceWorkflow';
 //# sourceMappingURL=index.d.ts.map
