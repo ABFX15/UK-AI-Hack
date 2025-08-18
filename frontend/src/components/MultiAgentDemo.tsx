@@ -45,8 +45,8 @@ interface Agent {
   current_task: string;
   progress: number;
   confidence_level: number;
-  conversation_history: string[];
-  findings: any;
+  conversation_history?: string[];
+  findings: Record<string, unknown>;
 }
 
 interface AgentMessage {
@@ -83,7 +83,7 @@ export default function MultiAgentDemo() {
   const [currentRequest, setCurrentRequest] = useState(
     "Should JPMorgan invest $500M in Aave for Q4 2025?"
   );
-  const [liveAnalysis, setLiveAnalysis] = useState<any>({});
+  const [liveAnalysis, setLiveAnalysis] = useState<Record<string, unknown>>({});
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const statusInterval = useRef<NodeJS.Timeout | null>(null);
@@ -212,17 +212,23 @@ export default function MultiAgentDemo() {
   // Fetch real-time status
   const fetchAgentStatus = async () => {
     try {
-      const response = await fetch("http://localhost:8001/demo/agents/status");
+      const aiServiceUrl =
+        process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:8001";
+      const response = await fetch(`${aiServiceUrl}/demo/agents/status`);
       if (response.ok) {
         const data = await response.json();
         setAgents(data.agents || {});
         setMessages(data.collaboration_log || []);
 
         // Update live analysis data
-        const analysis = {};
-        Object.values(data.agents || {}).forEach((agent: any) => {
-          if (agent.findings && Object.keys(agent.findings).length > 0) {
-            analysis[agent.agent_id] = agent.findings;
+        const analysis: Record<string, unknown> = {};
+        Object.values(data.agents || {}).forEach((agent: unknown) => {
+          const typedAgent = agent as Agent;
+          if (
+            typedAgent.findings &&
+            Object.keys(typedAgent.findings).length > 0
+          ) {
+            analysis[typedAgent.agent_id] = typedAgent.findings;
           }
         });
         setLiveAnalysis(analysis);
@@ -242,7 +248,9 @@ export default function MultiAgentDemo() {
 
     // Reset agents first
     try {
-      await fetch("http://localhost:8001/demo/agents/reset", {
+      const aiServiceUrl =
+        process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:8001";
+      await fetch(`${aiServiceUrl}/demo/agents/reset`, {
         method: "POST",
       });
     } catch (error) {
@@ -253,8 +261,10 @@ export default function MultiAgentDemo() {
     statusInterval.current = setInterval(fetchAgentStatus, 500);
 
     try {
+      const aiServiceUrl =
+        process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:8001";
       const response = await fetch(
-        "http://localhost:8001/demo/institutional-request",
+        `${aiServiceUrl}/demo/institutional-request`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -267,23 +277,51 @@ export default function MultiAgentDemo() {
 
       if (response.ok) {
         const result = await response.json();
-        // Transform the result to match our new interface
+        // Transform the result to match our new interface - handle various response formats
         const analysisResult: AnalysisResult = {
-          analysis_id: result.result.demo_id,
-          original_request: result.result.original_request,
-          execution_time: result.result.execution_time,
-          final_decision: result.result.final_decision,
-          financial_impact: result.result.financial_impact,
-          key_insights: result.result.demo_highlights || [],
-          regulatory_highlights: result.result.judge_wow_factors || [],
+          analysis_id:
+            result.result?.demo_id ||
+            result.request_id ||
+            `analysis_${Date.now()}`,
+          original_request: result.result?.original_request || currentRequest,
+          execution_time: result.result?.execution_time || "2-3 minutes",
+          final_decision:
+            result.result?.final_decision || "Analysis in progress...",
+          financial_impact:
+            result.result?.financial_impact || "To be determined",
+          key_insights: result.result?.demo_highlights || [],
+          regulatory_highlights: result.result?.judge_wow_factors || [],
         };
         setAnalysisResult(analysisResult);
         setCurrentStep(6);
       } else {
         console.error("Analysis failed:", await response.text());
+        setMessages((prev) => [
+          ...prev,
+          {
+            from_agent: "system",
+            to_agent: "user",
+            message_type: "error",
+            content:
+              "❌ Analysis failed. Please check the AI service connection.",
+            timestamp: new Date().toISOString(),
+          },
+        ]);
       }
     } catch (error) {
       console.error("Analysis error:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          from_agent: "system",
+          to_agent: "user",
+          message_type: "error",
+          content:
+            "🔌 Cannot connect to AI service. Please ensure the AI service is running at " +
+            (process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:8001"),
+          timestamp: new Date().toISOString(),
+        },
+      ]);
     } finally {
       setIsRunning(false);
       if (statusInterval.current) {
@@ -308,7 +346,9 @@ export default function MultiAgentDemo() {
     }
 
     try {
-      await fetch("http://localhost:8001/demo/agents/reset", {
+      const aiServiceUrl =
+        process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:8001";
+      await fetch(`${aiServiceUrl}/demo/agents/reset`, {
         method: "POST",
       });
       await fetchAgentStatus();
@@ -432,16 +472,17 @@ export default function MultiAgentDemo() {
                       </div>
                     )}
 
-                    {agent.conversation_history.length > 0 && (
-                      <div className="mt-2 p-2 bg-slate-50 rounded text-xs">
-                        <strong>Latest Update:</strong>{" "}
-                        {
-                          agent.conversation_history[
-                            agent.conversation_history.length - 1
-                          ]
-                        }
-                      </div>
-                    )}
+                    {agent.conversation_history &&
+                      agent.conversation_history.length > 0 && (
+                        <div className="mt-2 p-2 bg-slate-50 rounded text-xs">
+                          <strong>Latest Update:</strong>{" "}
+                          {
+                            agent.conversation_history[
+                              agent.conversation_history.length - 1
+                            ]
+                          }
+                        </div>
+                      )}
                   </div>
                 ))}
               </CardContent>

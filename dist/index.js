@@ -9,9 +9,8 @@ const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
 const dotenv_1 = __importDefault(require("dotenv"));
 // Import compliance-focused routes  
-const simple_test_1 = __importDefault(require("./routes/simple-test"));
-// import complianceDemoRoutes from './routes/compliance-demo';
-// import authRoutes from './routes/auth'; // Commented out - file doesn't exist
+const compliance_demo_js_1 = __importDefault(require("./routes/compliance-demo.js"));
+const auth_js_1 = __importDefault(require("./routes/auth.js"));
 // Load environment variables
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -44,9 +43,9 @@ app.get('/', (req, res) => {
         api_endpoints: {
             compliance_analysis: '/api/compliance/analyze-protocol',
             aml_analysis: '/api/compliance/analyze-transaction',
-            compliance_reports: '/api/compliance/report',
-            dashboard: '/api/compliance/dashboard',
-            settings: '/api/compliance/settings'
+            compliance_reports: '/api/compliance/report/:institutionId',
+            dashboard: '/api/compliance/dashboard/:institutionId',
+            settings: '/api/compliance/settings/:institutionId'
         },
         ai_service: {
             url: process.env.AI_SERVICE_URL || 'http://localhost:8000',
@@ -82,73 +81,38 @@ app.get('/api', (req, res) => {
         endpoints: {
             'POST /api/compliance/analyze-protocol': 'Analyze DeFi protocol risk',
             'POST /api/compliance/analyze-transaction': 'AML compliance analysis',
-            'GET /api/compliance/report': 'Generate compliance report',
-            'GET /api/compliance/dashboard': 'Real-time dashboard data',
-            'PUT /api/compliance/settings': 'Update compliance settings',
-            'GET /api/compliance/history': 'Historical compliance data'
+            'GET /api/compliance/report/:institutionId': 'Generate compliance report',
+            'GET /api/compliance/dashboard/:institutionId': 'Real-time dashboard data',
+            'PUT /api/compliance/settings/:institutionId': 'Update compliance settings',
         }
     });
 });
-// API Routes
-app.use('/api', simple_test_1.default);
-// app.use('/api/compliance', complianceDemoRoutes);
-// app.use('/api/auth', authRoutes); // Commented out - route doesn't exist
+// Routes
+app.use('/api/compliance', compliance_demo_js_1.default);
+app.use('/api/auth', auth_js_1.default);
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        error: 'Internal Server Error',
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong!'
+    });
+});
 // 404 handler
 app.use('*', (req, res) => {
     res.status(404).json({
-        error: 'Endpoint not found',
-        message: 'Please check the API documentation at /api for available endpoints',
-        available_endpoints: ['/api/compliance', '/api/auth', '/health']
+        error: 'Not Found',
+        message: `The endpoint ${req.originalUrl} does not exist`
     });
-});
-// Global error handler
-app.use((error, req, res, next) => {
-    console.error('🚨 Unhandled API error:', error);
-    // Log additional context in development
-    if (process.env.NODE_ENV === 'development') {
-        console.error('Request URL:', req.originalUrl);
-        console.error('Request Method:', req.method);
-        console.error('Request Body:', req.body);
-    }
-    res.status(error.status || 500).json({
-        error: true,
-        message: error.message || 'Internal server error',
-        code: error.code || 'INTERNAL_ERROR',
-        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
-    });
-});
-// Background compliance monitoring (runs every 30 minutes)
-setInterval(async () => {
-    try {
-        console.log('� Running compliance monitoring tasks...');
-        // In production, this would:
-        // 1. Check for new DeFi protocol deployments
-        // 2. Monitor TVL changes in tracked protocols  
-        // 3. Scan for suspicious transaction patterns
-        // 4. Update regulatory alerts
-        // 5. Generate automated reports for flagged activities
-        console.log('✅ Compliance monitoring tasks completed');
-    }
-    catch (error) {
-        console.error('❌ Error in compliance monitoring:', error);
-    }
-}, 30 * 60 * 1000); // Run every 30 minutes
-// Graceful shutdown
-process.on('SIGTERM', () => {
-    console.log('🛑 SIGTERM received, shutting down gracefully...');
-    process.exit(0);
-});
-process.on('SIGINT', () => {
-    console.log('🛑 SIGINT received, shutting down gracefully...');
-    process.exit(0);
 });
 // Start server
 app.listen(PORT, () => {
-    console.log(`🚀 DeFi Regulatory Compliance Platform running on port ${PORT}`);
-    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🔗 API Documentation: http://localhost:${PORT}/api`);
-    console.log(`💊 Health Check: http://localhost:${PORT}/health`);
-    console.log(`🛡️  Compliance Dashboard: http://localhost:${PORT}/`);
+    console.log(`🏛️ DeFi Regulatory Compliance Platform`);
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📊 Dashboard: http://localhost:${PORT}`);
+    console.log(`🤖 AI Service: ${process.env.AI_SERVICE_URL || 'http://localhost:8001'}`);
+    console.log(`🔗 Smart Contracts: Circle Layer Testnet`);
+    console.log(`⚡ Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 exports.default = app;
 //# sourceMappingURL=index.js.map

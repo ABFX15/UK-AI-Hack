@@ -170,9 +170,9 @@ export default function LandingPage() {
               Banks Are Losing <span className="text-red-600">Billions</span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Manual compliance monitoring can't keep up with the complexity of
-              DeFi. One violation can cost millions in fines and destroy
-              institutional reputation.
+              Manual compliance monitoring can&apos;t keep up with the
+              complexity of DeFi. One violation can cost millions in fines and
+              destroy institutional reputation.
             </p>
           </div>
 
@@ -208,8 +208,8 @@ export default function LandingPage() {
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-gray-600 mb-4">
-                  Human analysts can't monitor thousands of DeFi protocols in
-                  real-time across changing regulations.
+                  Human analysts can&apos;t monitor thousands of DeFi protocols
+                  in real-time across changing regulations.
                 </p>
                 <Badge className="bg-orange-100 text-orange-800 border-orange-200">
                   Scaling Problem

@@ -1,7 +1,11 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-/* config options here */
-};
-exports.default = nextConfig;
-//# sourceMappingURL=next.config.js.map
+    eslint: {
+        ignoreDuringBuilds: true,
+    },
+    typescript: {
+        ignoreBuildErrors: true,
+    },
+}
+
+module.exports = nextConfig

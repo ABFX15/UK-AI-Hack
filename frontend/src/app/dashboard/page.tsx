@@ -233,9 +233,9 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="relative z-10">
               <p className="text-red-100 mb-6">
-                Manual monitoring can't keep up with regulatory changes across
-                jurisdictions. One violation could cost millions in fines and
-                reputational damage.
+                Manual monitoring can&apos;t keep up with regulatory changes
+                across jurisdictions. One violation could cost millions in fines
+                and reputational damage.
               </p>
               <Badge className="bg-white/20 text-white border-white/30 px-4 py-2 font-semibold">
                 Critical Business Risk

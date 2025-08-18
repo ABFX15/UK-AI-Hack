@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/next",
+      "config": {
+        "distDir": ".next"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_CIRCLE_RPC_URL": "https://testnet-rpc.circlelayer.com",
+    "NEXT_PUBLIC_CIRCLE_CHAIN_ID": "28525",
+    "NEXT_PUBLIC_CIRCLE_EXPLORER_URL": "https://explorer-testnet.circlelayer.com",
+    "NEXT_PUBLIC_REGULATORY_ORACLE_ADDRESS": "0x820BD166B883B508BDCb7516bD15ea798bDaF6d7",
+    "NEXT_PUBLIC_TRANSACTION_MONITOR_ADDRESS": "0xcC3FBa07565aCe3Ca332C2b5aC4fB8dE65b95923",
+    "NEXT_PUBLIC_INSTITUTIONAL_TREASURY_ADDRESS": "0x252Ef808de409Bc6718B56e1bBcAd52037152D42"
+  },
+  "projectSettings": {
+    "buildCommand": "cd frontend && npm run build",
+    "outputDirectory": "frontend/.next",
+    "installCommand": "npm install",
+    "rootDirectory": "frontend"
+  }
+}
